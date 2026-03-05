@@ -1,0 +1,46 @@
+### KIỂM THỬ API GIẢNG VIÊN (TEACHER)
+### Yêu cầu: Chạy Server Spring Boot (mặc định port 8080) trước khi chạy các lệnh này.
+
+### 1. Lấy danh sách toàn bộ Giảng viên
+GET http://localhost:8080/api/teachers
+
+### 2. Lấy thông tin 1 Giảng viên bằng ID (VD: id=1)
+GET http://localhost:8080/api/teachers/1
+
+### 3. Thêm mới một Giảng viên
+POST http://localhost:8080/api/teachers
+Content-Type: application/json
+
+{
+  "fullName": "Giáo Sư X",
+  "phone": "0999888777",
+  "email": "gs.x@center.com",
+  "specialty": "TOEIC",
+  "hireDate": "2024-01-01",
+  "status": "Active"
+}
+
+### 4. Cập nhật thông tin Giảng viên (Sửa Giảng viên có ID=1)
+PUT http://localhost:8080/api/teachers/1
+Content-Type: application/json
+
+{
+  "fullName": "Nguyễn Văn An (Đã sửa)",
+  "phone": "0901111111",
+  "email": "an.nguyen.update@center.com",
+  "specialty": "IELTS & TOEFL",
+  "hireDate": "2023-01-15",
+  "status": "Active"
+}
+
+### 5. Lấy danh sách danh sách các Giảng viên CÒN HOẠT ĐỘNG (Dùng Stream API)
+GET http://localhost:8080/api/teachers/active
+
+### 6. Tìm kiếm Giảng viên theo Tên (Dùng Stream API)
+GET http://localhost:8080/api/teachers/search?name=an
+
+### 7. Lọc Giảng viên theo Chuyên môn (Dùng Stream API)
+GET http://localhost:8080/api/teachers/specialty?specialty=IELTS
+
+### 8. Xóa Giảng viên (VD: Xóa id=3, cẩn thận nếu GV đã xếp lớp sẽ bị lỗi khóa ngoại)
+DELETE http://localhost:8080/api/teachers/3

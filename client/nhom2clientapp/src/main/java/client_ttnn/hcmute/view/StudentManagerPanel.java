@@ -57,6 +57,9 @@ public class StudentManagerPanel extends JPanel {
             }
         };
         studentTable = new JTable(tableModel);
+        studentTable.setRowHeight(30); // Tăng chiều cao dòng cho dễ nhìn
+        studentTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        
         studentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         studentTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && studentTable.getSelectedRow() != -1) {
@@ -65,6 +68,11 @@ public class StudentManagerPanel extends JPanel {
         });
         
         JScrollPane scrollPane = new JScrollPane(studentTable);
+        // Tạo khoảng trắng giữa Panel Search và Bảng
+        scrollPane.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createEmptyBorder(10, 0, 10, 10), 
+                UIManager.getBorder("ScrollPane.border")));
+                
         add(scrollPane, BorderLayout.CENTER);
 
         // Right Panel - Form

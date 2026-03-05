@@ -47,4 +47,21 @@ public class TeacherController {
         teacherService.deleteTeacher(id);
         return ResponseEntity.noContent().build();
     }
+
+    // --- CÁC ENDPOINT SỬ DỤNG STREAM API ---
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Teacher>> searchTeachers(@RequestParam(required = false) String name) {
+        return ResponseEntity.ok(teacherService.searchTeachersByName(name));
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<Teacher>> getActiveTeachers() {
+        return ResponseEntity.ok(teacherService.getActiveTeachers());
+    }
+
+    @GetMapping("/specialty")
+    public ResponseEntity<List<Teacher>> getTeachersBySpecialty(@RequestParam String specialty) {
+        return ResponseEntity.ok(teacherService.getTeachersBySpecialty(specialty));
+    }
 }
