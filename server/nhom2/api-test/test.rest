@@ -1,0 +1,9 @@
+GET http://localhost:8080/api/students
+###
+## Base URL
+```
+http://localhost:8080/api
+```
+
+###
+GET http://localhost:8080/api/students
