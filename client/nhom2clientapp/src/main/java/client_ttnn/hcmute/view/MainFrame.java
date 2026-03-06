@@ -40,26 +40,52 @@ public class MainFrame extends JFrame {
         // --- Khởi tạo các Panel chức năng ---
         StudentManagerPanel studentPanel = new StudentManagerPanel();
         TeacherManagerPanel teacherPanel = new TeacherManagerPanel();
+        CourseManagerPanel coursePanel = new CourseManagerPanel();
+        ClassManagerPanel classPanel = new ClassManagerPanel();
+        EnrollmentManagerPanel enrollmentPanel = new EnrollmentManagerPanel();
+        PlacementTestManagerPanel placementTestPanel = new PlacementTestManagerPanel();
+        CertificateManagerPanel certificatePanel = new CertificateManagerPanel();
         
         // Đặt tên chuỗi cho từng Card để gọi
         contentPanel.add(studentPanel, "StudentPanel");
         contentPanel.add(teacherPanel, "TeacherPanel");
-        // contentPanel.add(new ClassManagerPanel(), "ClassPanel");
+        contentPanel.add(coursePanel, "CoursePanel");
+        contentPanel.add(classPanel, "ClassPanel");
+        contentPanel.add(enrollmentPanel, "EnrollmentPanel");
+        contentPanel.add(placementTestPanel, "PlacementTestPanel");
+        contentPanel.add(certificatePanel, "CertificatePanel");
 
         // --- Tạo các Nút Menu ---
         JButton btnStudent = createMenuButton("👩‍🎓 Quản Lý Học Viên");
         JButton btnTeacher = createMenuButton("👨‍🏫 Quản Lý Giảng Viên");
-        // JButton btnClass = createMenuButton("🏫 Quản Lý Lớp Học");
+        JButton btnCourse = createMenuButton("📚 Quản Lý Khóa Học");
+        JButton btnClass = createMenuButton("🏫 Quản Lý Lớp Học");
+        JButton btnEnrollment = createMenuButton("📝 Quản Lý Ghi Danh");
+        JButton btnPlacementTest = createMenuButton("📊 Quản Lý Placement Test");
+        JButton btnCertificate = createMenuButton("🎓 Quản Lý Chứng Chỉ");
 
         // Add action cho các nút để chuyển Card
         btnStudent.addActionListener(e -> cardLayout.show(contentPanel, "StudentPanel"));
         btnTeacher.addActionListener(e -> cardLayout.show(contentPanel, "TeacherPanel"));
+        btnCourse.addActionListener(e -> cardLayout.show(contentPanel, "CoursePanel"));
+        btnClass.addActionListener(e -> cardLayout.show(contentPanel, "ClassPanel"));
+        btnEnrollment.addActionListener(e -> cardLayout.show(contentPanel, "EnrollmentPanel"));
+        btnPlacementTest.addActionListener(e -> cardLayout.show(contentPanel, "PlacementTestPanel"));
+        btnCertificate.addActionListener(e -> cardLayout.show(contentPanel, "CertificatePanel"));
 
         sidebarPanel.add(btnStudent);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnTeacher);
-        // sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        // sidebarPanel.add(btnClass);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnCourse);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnClass);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnEnrollment);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnPlacementTest);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnCertificate);
 
         // Thêm Sidebar và Content vào Frame
         add(sidebarPanel, BorderLayout.WEST);

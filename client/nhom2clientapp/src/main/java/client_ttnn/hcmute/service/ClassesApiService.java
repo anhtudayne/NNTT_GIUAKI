@@ -1,7 +1,9 @@
-package client_ttnn.hcmute;
+package client_ttnn.hcmute.service;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import client_ttnn.hcmute.model.Classes;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -9,18 +11,18 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-public class StudentApiService {
-    private static final String BASE_URL = "http://localhost:8080/api/students";
+public class ClassesApiService {
+    private static final String BASE_URL = "http://localhost:8080/api/classes";
     private final HttpClient httpClient;
     private final Gson gson;
 
-    public StudentApiService() {
+    public ClassesApiService() {
         this.httpClient = HttpClient.newHttpClient();
         this.gson = new Gson();
     }
 
-    // GET All Students
-    public List<Student> getAllStudents() throws Exception {
+    // GET All Classes
+    public List<Classes> getAllClasses() throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL))
                 .GET()
@@ -29,14 +31,14 @@ public class StudentApiService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         
         if (response.statusCode() == 200) {
-            return gson.fromJson(response.body(), new TypeToken<List<Student>>(){}.getType());
+            return gson.fromJson(response.body(), new TypeToken<List<Classes>>(){}.getType());
         } else {
-            throw new Exception("Failed to get students: " + response.statusCode());
+            throw new Exception("Failed to get classes: " + response.statusCode());
         }
     }
 
-    // GET Student by ID
-    public Student getStudentById(Long id) throws Exception {
+    // GET Class by ID
+    public Classes getClassById(Long id) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/" + id))
                 .GET()
@@ -45,15 +47,15 @@ public class StudentApiService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         
         if (response.statusCode() == 200) {
-            return gson.fromJson(response.body(), Student.class);
+            return gson.fromJson(response.body(), Classes.class);
         } else {
-            throw new Exception("Failed to get student: " + response.statusCode());
+            throw new Exception("Failed to get class: " + response.statusCode());
         }
     }
 
-    // POST Create Student
-    public Student createStudent(Student student) throws Exception {
-        String jsonBody = gson.toJson(student);
+    // POST Create Class
+    public Classes createClass(Classes classes) throws Exception {
+        String jsonBody = gson.toJson(classes);
         
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL))
@@ -64,15 +66,15 @@ public class StudentApiService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         
         if (response.statusCode() == 201 || response.statusCode() == 200) {
-            return gson.fromJson(response.body(), Student.class);
+            return gson.fromJson(response.body(), Classes.class);
         } else {
-            throw new Exception("Failed to create student: " + response.statusCode());
+            throw new Exception("Failed to create class: " + response.statusCode());
         }
     }
 
-    // PUT Update Student
-    public Student updateStudent(Long id, Student student) throws Exception {
-        String jsonBody = gson.toJson(student);
+    // PUT Update Class
+    public Classes updateClass(Long id, Classes classes) throws Exception {
+        String jsonBody = gson.toJson(classes);
         
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/" + id))
@@ -83,14 +85,14 @@ public class StudentApiService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         
         if (response.statusCode() == 200) {
-            return gson.fromJson(response.body(), Student.class);
+            return gson.fromJson(response.body(), Classes.class);
         } else {
-            throw new Exception("Failed to update student: " + response.statusCode());
+            throw new Exception("Failed to update class: " + response.statusCode());
         }
     }
 
-    // DELETE Student
-    public void deleteStudent(Long id) throws Exception {
+    // DELETE Class
+    public void deleteClass(Long id) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/" + id))
                 .DELETE()
@@ -98,13 +100,13 @@ public class StudentApiService {
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         
-        if (response.statusCode() != 204 && response.statusCode() != 200) {
-            throw new Exception("Failed to delete student: " + response.statusCode());
+        if (response.statusCode() != 200 && response.statusCode() != 204) {
+            throw new Exception("Failed to delete class: " + response.statusCode());
         }
     }
 
-    // Search Students by Name
-    public List<Student> searchByName(String name) throws Exception {
+    // Search Class by Name
+    public List<Classes> searchByName(String name) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(BASE_URL + "/search?name=" + name))
                 .GET()
@@ -113,9 +115,9 @@ public class StudentApiService {
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         
         if (response.statusCode() == 200) {
-            return gson.fromJson(response.body(), new TypeToken<List<Student>>(){}.getType());
+            return gson.fromJson(response.body(), new TypeToken<List<Classes>>(){}.getType());
         } else {
-            throw new Exception("Failed to search students: " + response.statusCode());
+            throw new Exception("Failed to search classes: " + response.statusCode());
         }
     }
 }

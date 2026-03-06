@@ -47,4 +47,10 @@ public class ClassController {
         classService.deleteClass(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Class>> searchClassesByName(@RequestParam String name) {
+        List<Class> classes = classService.searchClassesByName(name);
+        return ResponseEntity.ok(classes);
+    }
 }

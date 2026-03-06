@@ -1,7 +1,7 @@
 package client_ttnn.hcmute.view;
 
-import client_ttnn.hcmute.Student;
-import client_ttnn.hcmute.StudentApiService;
+import client_ttnn.hcmute.model.Student;
+import client_ttnn.hcmute.service.StudentApiService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -57,7 +57,7 @@ public class StudentManagerPanel extends JPanel {
             }
         };
         studentTable = new JTable(tableModel);
-        studentTable.setRowHeight(30); // Tăng chiều cao dòng cho dễ nhìn
+        studentTable.setRowHeight(30);
         studentTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         
         studentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -68,7 +68,6 @@ public class StudentManagerPanel extends JPanel {
         });
         
         JScrollPane scrollPane = new JScrollPane(studentTable);
-        // Tạo khoảng trắng giữa Panel Search và Bảng
         scrollPane.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createEmptyBorder(10, 0, 10, 10), 
                 UIManager.getBorder("ScrollPane.border")));
@@ -128,14 +127,14 @@ public class StudentManagerPanel extends JPanel {
         formPanel.add(cmbStatus, gbc);
 
         // Button panel
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
         JButton btnAdd = new JButton("Thêm mới");
         btnAdd.addActionListener(e -> createStudent());
         JButton btnUpdate = new JButton("Cập nhật");
         btnUpdate.addActionListener(e -> updateStudent());
         JButton btnDelete = new JButton("Xóa");
         btnDelete.addActionListener(e -> deleteStudent());
-        JButton btnClear = new JButton("Làm mới form");
+        JButton btnClear = new JButton("Xóa trắng bảng form");
         btnClear.addActionListener(e -> clearForm());
 
         buttonPanel.add(btnAdd);
@@ -197,13 +196,15 @@ public class StudentManagerPanel extends JPanel {
     private void loadSelectedStudent() {
         int selectedRow = studentTable.getSelectedRow();
         if (selectedRow != -1) {
+            // Check null pointers for attributes
             selectedStudentId = (Long) tableModel.getValueAt(selectedRow, 0);
-            txtFullName.setText((String) tableModel.getValueAt(selectedRow, 1));
-            txtDateOfBirth.setText((String) tableModel.getValueAt(selectedRow, 2));
+            System.out.println("Selected Student ID: " + selectedStudentId);
+            txtFullName.setText(tableModel.getValueAt(selectedRow, 1) != null ? (String) tableModel.getValueAt(selectedRow, 1) : "");
+            txtDateOfBirth.setText(tableModel.getValueAt(selectedRow, 2) != null ? (String) tableModel.getValueAt(selectedRow, 2) : "");
             cmbGender.setSelectedItem(tableModel.getValueAt(selectedRow, 3));
-            txtPhone.setText((String) tableModel.getValueAt(selectedRow, 4));
-            txtEmail.setText((String) tableModel.getValueAt(selectedRow, 5));
-            txtAddress.setText((String) tableModel.getValueAt(selectedRow, 6));
+            txtPhone.setText(tableModel.getValueAt(selectedRow, 4) != null ? (String) tableModel.getValueAt(selectedRow, 4) : "");
+            txtEmail.setText(tableModel.getValueAt(selectedRow, 5) != null ? (String) tableModel.getValueAt(selectedRow, 5) : "");
+            txtAddress.setText(tableModel.getValueAt(selectedRow, 6) != null ? (String) tableModel.getValueAt(selectedRow, 6) : "");
             cmbStatus.setSelectedItem(tableModel.getValueAt(selectedRow, 7));
         }
     }

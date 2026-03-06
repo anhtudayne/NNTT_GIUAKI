@@ -388,6 +388,39 @@ Content-Type: application/json
 DELETE /api/classes/1
 ```
 
+### 8.6 Search Classes by Name
+```
+GET /api/classes/search?name=TOEIC
+```
+
+**Response (200 OK)**:
+```json
+[
+  {
+    "classId": 1,
+    "className": "TOEIC-A01",
+    "course": {"courseId": 1, "courseName": "TOEIC 850+"},
+    "teacher": {"teacherId": 1, "fullName": "Nguyễn Văn An"},
+    "room": {"roomId": 1, "roomName": "P.101"},
+    "startDate": "2026-04-01",
+    "endDate": "2026-06-30",
+    "maxStudent": 25,
+    "status": "Pending"
+  },
+  {
+    "classId": 2,
+    "className": "TOEIC-A02",
+    "course": {"courseId": 1, "courseName": "TOEIC 850+"},
+    "teacher": {"teacherId": 2, "fullName": "Ms. Jessica Lee"},
+    "room": {"roomId": 2, "roomName": "P.201"},
+    "startDate": "2026-04-15",
+    "endDate": "2026-07-15",
+    "maxStudent": 30,
+    "status": "Pending"
+  }
+]
+```
+
 ## 9. Placement Tests API (`/api/placement-tests`)
 
 ### 9.1 GET All Placement Tests

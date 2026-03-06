@@ -1,7 +1,7 @@
-package client_ttnn.hcmute;
+package client_ttnn.hcmute.model;
 
 public class Student {
-    private Long id;
+    private Long studentId;
     private String fullName;
     private String dateOfBirth;
     private String gender;
@@ -26,11 +26,11 @@ public class Student {
 
     // Getters and Setters
     public Long getId() {
-        return id;
+        return studentId;
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.studentId = id;
     }
 
     public String getFullName() {
@@ -92,7 +92,7 @@ public class Student {
     @Override
     public String toString() {
         return "Student{" +
-                "id=" + id +
+                "id=" + studentId +
                 ", fullName='" + fullName + '\'' +
                 ", dateOfBirth='" + dateOfBirth + '\'' +
                 ", gender='" + gender + '\'' +
