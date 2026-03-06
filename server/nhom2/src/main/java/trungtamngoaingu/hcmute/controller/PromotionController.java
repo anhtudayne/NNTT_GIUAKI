@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import trungtamngoaingu.hcmute.entity.Promotion;
 import trungtamngoaingu.hcmute.service.PromotionService;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,5 +48,52 @@ public class PromotionController {
     public ResponseEntity<Void> deletePromotion(@PathVariable Integer id) {
         promotionService.deletePromotion(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Tìm promotion theo mã.
+     * Ví dụ: GET /api/promotions/by-code?code=SUMMER2026
+     */
+    @GetMapping("/by-code")
+    public ResponseEntity<Promotion> getPromotionByCode(@RequestParam("code") String code) {
+        Optional<Promotion> promotion = promotionService.findByCode(code);
+        return promotion.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Lấy danh sách promotion còn hiệu lực tại một ngày cụ thể.
+     * Ví dụ:
+     *  - GET /api/promotions/active
+     *  - GET /api/promotions/active?date=2026-03-05
+     */
+    @GetMapping("/active")
+    public ResponseEntity<List<Promotion>> getActivePromotions(
+            @RequestParam(value = "date", required = false) String dateStr) {
+        LocalDate date = null;
+        if (dateStr != null && !dateStr.isBlank()) {
+            date = LocalDate.parse(dateStr);
+        }
+        return ResponseEntity.ok(promotionService.getActivePromotions(date));
+    }
+
+    /**
+     * Validate một mã promotion tại một ngày (mặc định ngày hiện tại).
+     * Ví dụ:
+     *  - GET /api/promotions/validate?code=SUMMER2026
+     *  - GET /api/promotions/validate?code=SUMMER2026&date=2026-06-01
+     */
+    @GetMapping("/validate")
+    public ResponseEntity<Promotion> validatePromotion(
+            @RequestParam("code") String code,
+            @RequestParam(value = "date", required = false) String dateStr) {
+        LocalDate date = null;
+        if (dateStr != null && !dateStr.isBlank()) {
+            date = LocalDate.parse(dateStr);
+        }
+
+        Optional<Promotion> promotion = promotionService.validatePromotion(code, date);
+        return promotion.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
