@@ -57,7 +57,7 @@ public class PlacementTestManagerPanel extends JPanel {
 
         placementTestTable = new JTable(tableModel);
         placementTestTable.setRowHeight(30);
-        placementTestTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        placementTestTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
         placementTestTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         placementTestTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && placementTestTable.getSelectedRow() != -1) {

@@ -62,7 +62,7 @@ public class ClassManagerPanel extends JPanel {
         };
         classTable = new JTable(tableModel);
         classTable.setRowHeight(30);
-        classTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        classTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
         
         classTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         classTable.getSelectionModel().addListSelectionListener(e -> {

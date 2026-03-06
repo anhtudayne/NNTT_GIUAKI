@@ -57,7 +57,7 @@ public class CourseManagerPanel extends JPanel {
         };
         courseTable = new JTable(tableModel);
         courseTable.setRowHeight(30);
-        courseTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        courseTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
         
         courseTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         courseTable.getSelectionModel().addListSelectionListener(e -> {

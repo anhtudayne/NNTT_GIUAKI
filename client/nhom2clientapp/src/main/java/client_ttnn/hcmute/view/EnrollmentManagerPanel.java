@@ -61,7 +61,7 @@ public class EnrollmentManagerPanel extends JPanel {
 
         enrollmentTable = new JTable(tableModel);
         enrollmentTable.setRowHeight(30);
-        enrollmentTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        enrollmentTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
         enrollmentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         enrollmentTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && enrollmentTable.getSelectedRow() != -1) {

@@ -60,7 +60,7 @@ public class CertificateManagerPanel extends JPanel {
 
         certificateTable = new JTable(tableModel);
         certificateTable.setRowHeight(30);
-        certificateTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        certificateTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
         certificateTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         certificateTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && certificateTable.getSelectedRow() != -1) {

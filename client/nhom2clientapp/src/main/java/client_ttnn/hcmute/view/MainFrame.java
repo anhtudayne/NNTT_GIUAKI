@@ -25,7 +25,7 @@ public class MainFrame extends JFrame {
 
         // Tiêu đề Logo
         JLabel lblLogo = new JLabel("LANGUAGE CENTER", SwingConstants.CENTER);
-        lblLogo.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblLogo.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22));
         lblLogo.setForeground(Color.WHITE);
         lblLogo.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblLogo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
@@ -56,13 +56,13 @@ public class MainFrame extends JFrame {
         contentPanel.add(certificatePanel, "CertificatePanel");
 
         // --- Tạo các Nút Menu ---
-        JButton btnStudent = createMenuButton("👩‍🎓 Quản Lý Học Viên");
-        JButton btnTeacher = createMenuButton("👨‍🏫 Quản Lý Giảng Viên");
-        JButton btnCourse = createMenuButton("📚 Quản Lý Khóa Học");
-        JButton btnClass = createMenuButton("🏫 Quản Lý Lớp Học");
-        JButton btnEnrollment = createMenuButton("📝 Quản Lý Ghi Danh");
-        JButton btnPlacementTest = createMenuButton("📊 Quản Lý Placement Test");
-        JButton btnCertificate = createMenuButton("🎓 Quản Lý Chứng Chỉ");
+        JButton btnStudent = createMenuButton("Quản Lý Học Viên");
+        JButton btnTeacher = createMenuButton("Quản Lý Giảng Viên");
+        JButton btnCourse = createMenuButton("Quản Lý Khóa Học");
+        JButton btnClass = createMenuButton("Quản Lý Lớp Học");
+        JButton btnEnrollment = createMenuButton("Quản Lý Ghi Danh");
+        JButton btnPlacementTest = createMenuButton("Quản Lý Placement Test");
+        JButton btnCertificate = createMenuButton("Quản Lý Chứng Chỉ");
 
         // Add action cho các nút để chuyển Card
         btnStudent.addActionListener(e -> cardLayout.show(contentPanel, "StudentPanel"));
@@ -97,14 +97,13 @@ public class MainFrame extends JFrame {
      */
     private JButton createMenuButton(String text) {
         JButton button = new JButton(text);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); // Chiều rộng kéo dài hết mức của Sidebar
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45)); // Chiều rộng kéo dài hết mức
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
         button.setFocusPainted(false);
-        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setHorizontalAlignment(SwingConstants.CENTER);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Style tùy biến thêm (có thể bỏ qua nếu dùng FlatLaf Default nhưng Custom nhẹ cho đẹp)
         button.setForeground(Color.WHITE);
         button.setBackground(new Color(52, 73, 94));
         button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));

@@ -74,7 +74,7 @@ public class TeacherManagerPanel extends JPanel {
         };
         teacherTable = new JTable(tableModel);
         teacherTable.setRowHeight(30); // Tăng chiều cao dòng cho dễ nhìn
-        teacherTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        teacherTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
         // teacherTable.setShowVerticalLines(false); // Tuỳ chọn ẩn gạch dọc
         
         teacherTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
