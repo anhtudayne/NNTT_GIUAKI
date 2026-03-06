@@ -8,6 +8,10 @@ import java.util.List;
 
 @Repository
 public interface UserAccountRepository extends JpaRepository<UserAccount, Integer> {
-  @Query("SELECT u FROM UserAccount u")
-  List<UserAccount> myGetAll();
+    @Query("SELECT u FROM UserAccount u")
+    List<UserAccount> myGetAll();
+
+    // Tìm kiếm tài khoản dựa vào Username (Tài khoản phải Active)
+    @Query("SELECT u FROM UserAccount u WHERE u.username = :username AND u.status = 'Active'")
+    java.util.Optional<UserAccount> findByUsername(@org.springframework.data.repository.query.Param("username") String username);
 }

@@ -1,5 +1,6 @@
 package client_ttnn.hcmute.view;
 
+import client_ttnn.hcmute.model.UserAccount;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -8,9 +9,11 @@ public class MainFrame extends JFrame {
     
     private JPanel contentPanel;
     private CardLayout cardLayout;
+    private UserAccount currentUser;
 
-    public MainFrame() {
-        setTitle("Hệ Thống Quản Lý Trung Tâm Ngoại Ngữ");
+    public MainFrame(UserAccount user) {
+        this.currentUser = user;
+        setTitle("Hệ Thống Quản Lý Trung Tâm Ngoại Ngữ - " + (user != null ? user.getRole() : ""));
         setSize(1300, 750);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -110,6 +113,23 @@ public class MainFrame extends JFrame {
         sidebarPanel.add(btnPlacementTest);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnCertificate);
+
+        // --- LOGIC PHÂN QUYỀN HEADER ---
+        // Nếu là GIÁO VIÊN (Teacher), ẩn các nút Không thuộc thẩm quyền
+        if (currentUser != null && "Teacher".equals(currentUser.getRole())) {
+            btnStudent.setVisible(false);
+            btnTeacher.setVisible(false);
+            btnStaff.setVisible(false);
+            btnRoom.setVisible(false);
+            btnCourse.setVisible(false);
+            btnClass.setVisible(false);
+            btnEnrollment.setVisible(false);
+            btnPlacementTest.setVisible(false);
+            btnCertificate.setVisible(false);
+            // Teacher chỉ được xếp lịch và Xem TKB
+            // Mở mặc định Tab TKB cho Teacher lúc vào
+            cardLayout.show(contentPanel, "TimetablePanel"); 
+        }
 
         // Thêm Sidebar và Content vào Frame
         add(sidebarPanel, BorderLayout.WEST);
