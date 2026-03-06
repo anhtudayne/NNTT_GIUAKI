@@ -47,4 +47,16 @@ public class StaffController {
         staffService.deleteStaff(id);
         return ResponseEntity.noContent().build();
     }
+
+    // --- CÁC ENDPOINT SỬ DỤNG STREAM API ---
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Staff>> searchStaff(@RequestParam(required = false) String name) {
+        return ResponseEntity.ok(staffService.searchStaffByName(name));
+    }
+
+    @GetMapping("/role")
+    public ResponseEntity<List<Staff>> getStaffByRole(@RequestParam String role) {
+        return ResponseEntity.ok(staffService.getStaffByRole(role));
+    }
 }

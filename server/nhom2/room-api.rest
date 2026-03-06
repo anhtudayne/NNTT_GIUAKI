@@ -1,0 +1,39 @@
+### KIỂM THỬ API PHÒNG HỌC (ROOM)
+### Yêu cầu: Chạy Server Spring Boot (mặc định port 8080) trước khi chạy các lệnh này.
+
+### 1. Lấy danh sách toàn bộ Phòng học
+GET http://localhost:8080/api/rooms
+
+### 2. Lấy thông tin 1 Phòng học bằng ID (VD: id=1)
+GET http://localhost:8080/api/rooms/1
+
+### 3. Thêm mới một Phòng học
+POST http://localhost:8080/api/rooms
+Content-Type: application/json
+
+{
+  "roomName": "P.101 VIP",
+  "capacity": 30,
+  "location": "Tầng 1 - Khu A",
+  "status": "Available"
+}
+
+### 4. Cập nhật thông tin Phòng học (Sửa Phòng học có ID=1)
+PUT http://localhost:8080/api/rooms/1
+Content-Type: application/json
+
+{
+  "roomName": "P.302 (Đang bảo trì)",
+  "capacity": 50,
+  "location": "Tầng 3 - Tòa B",
+  "status": "Maintenance"
+}
+
+### 5. Lọc Phòng học theo Trạng thái (Dùng Stream API) (Available, Maintenance, Inactive)
+GET http://localhost:8080/api/rooms/status?status=Available
+
+### 6. Tìm Phòng học có sức chứa tối thiểu X (Dùng Stream API) (VD: Sức chứa >= 40)
+GET http://localhost:8080/api/rooms/capacity?minCapacity=40
+
+### 7. Xóa Phòng học (Cẩn thận khóa ngoại nếu Lịch Học Schedule đang dùng phòng này)
+DELETE http://localhost:8080/api/rooms/2

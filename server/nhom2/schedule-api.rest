@@ -1,0 +1,14 @@
+### File test API REST cho Module Lịch Học (Schedule) - Stream API
+
+### Lấy tất cả lịch học
+GET http://localhost:8080/api/schedules
+
+### TÌM CHỖ TRỐNG THEO STREAM API LAMBDA
+
+### 1. Lấy danh sách các PHÒNG HỌC (Room) RẢNH TỪ 07:00 đến 09:30 VÀO NGÀY 2026-03-10
+# Đây sẽ gọi API Stream filter bỏ các phòng có chứa Lịch học chèn ngang thời gian.
+GET http://localhost:8080/api/schedules/available-rooms?date=2026-03-10&start=07:00&end=09:30
+
+### 2. Lấy danh sách các GIẢNG VIÊN (Teacher) RẢNH TỪ 07:00 đến 09:30 VÀO NGÀY 2026-03-10
+# Backend sẽ query bảng Schedule kết hợp Class (TeacherId) và dùng Stream Lambda để lọc rảnh.
+GET http://localhost:8080/api/schedules/available-teachers?date=2026-03-10&start=07:00&end=09:30

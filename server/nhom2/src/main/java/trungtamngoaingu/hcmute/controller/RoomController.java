@@ -47,4 +47,16 @@ public class RoomController {
         roomService.deleteRoom(id);
         return ResponseEntity.noContent().build();
     }
+
+    // --- CÁC ENDPOINT SỬ DỤNG STREAM API ---
+
+    @GetMapping("/status")
+    public ResponseEntity<List<Room>> getRoomsByStatus(@RequestParam String status) {
+        return ResponseEntity.ok(roomService.getRoomsByStatus(status));
+    }
+
+    @GetMapping("/capacity")
+    public ResponseEntity<List<Room>> getRoomsByMinCapacity(@RequestParam Integer minCapacity) {
+        return ResponseEntity.ok(roomService.getRoomsByMinCapacity(minCapacity));
+    }
 }

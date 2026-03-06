@@ -40,6 +40,10 @@ public class MainFrame extends JFrame {
         // --- Khởi tạo các Panel chức năng ---
         StudentManagerPanel studentPanel = new StudentManagerPanel();
         TeacherManagerPanel teacherPanel = new TeacherManagerPanel();
+        StaffManagerPanel staffPanel = new StaffManagerPanel(); // NHÂN SỰ
+        RoomManagerPanel roomPanel = new RoomManagerPanel(); // PHÒNG HỌC MỚI THÊM
+        ScheduleManagerPanel schedulePanel = new ScheduleManagerPanel(); // LỊCH HỌC
+        TimetableViewPanel timetablePanel = new TimetableViewPanel(); // XEM TKB
         CourseManagerPanel coursePanel = new CourseManagerPanel();
         ClassManagerPanel classPanel = new ClassManagerPanel();
         EnrollmentManagerPanel enrollmentPanel = new EnrollmentManagerPanel();
@@ -49,6 +53,10 @@ public class MainFrame extends JFrame {
         // Đặt tên chuỗi cho từng Card để gọi
         contentPanel.add(studentPanel, "StudentPanel");
         contentPanel.add(teacherPanel, "TeacherPanel");
+        contentPanel.add(staffPanel, "StaffPanel"); 
+        contentPanel.add(roomPanel, "RoomPanel"); 
+        contentPanel.add(schedulePanel, "SchedulePanel"); // LỊCH HỌC
+        contentPanel.add(timetablePanel, "TimetablePanel"); // XEM TKB
         contentPanel.add(coursePanel, "CoursePanel");
         contentPanel.add(classPanel, "ClassPanel");
         contentPanel.add(enrollmentPanel, "EnrollmentPanel");
@@ -58,6 +66,10 @@ public class MainFrame extends JFrame {
         // --- Tạo các Nút Menu ---
         JButton btnStudent = createMenuButton("Quản Lý Học Viên");
         JButton btnTeacher = createMenuButton("Quản Lý Giảng Viên");
+        JButton btnStaff = createMenuButton("Quản Lý Nhân Sự"); 
+        JButton btnRoom = createMenuButton("Quản Lý Phòng Học"); 
+        JButton btnSchedule = createMenuButton("Xếp Lịch Học"); // LỊCH HỌC
+        JButton btnTimetable = createMenuButton("Xem Thời Khoá Biểu"); // XEM TKB
         JButton btnCourse = createMenuButton("Quản Lý Khóa Học");
         JButton btnClass = createMenuButton("Quản Lý Lớp Học");
         JButton btnEnrollment = createMenuButton("Quản Lý Ghi Danh");
@@ -67,6 +79,10 @@ public class MainFrame extends JFrame {
         // Add action cho các nút để chuyển Card
         btnStudent.addActionListener(e -> cardLayout.show(contentPanel, "StudentPanel"));
         btnTeacher.addActionListener(e -> cardLayout.show(contentPanel, "TeacherPanel"));
+        btnStaff.addActionListener(e -> cardLayout.show(contentPanel, "StaffPanel")); 
+        btnRoom.addActionListener(e -> cardLayout.show(contentPanel, "RoomPanel")); 
+        btnSchedule.addActionListener(e -> cardLayout.show(contentPanel, "SchedulePanel")); // LỊCH HỌC
+        btnTimetable.addActionListener(e -> cardLayout.show(contentPanel, "TimetablePanel")); // XEM TKB
         btnCourse.addActionListener(e -> cardLayout.show(contentPanel, "CoursePanel"));
         btnClass.addActionListener(e -> cardLayout.show(contentPanel, "ClassPanel"));
         btnEnrollment.addActionListener(e -> cardLayout.show(contentPanel, "EnrollmentPanel"));
@@ -76,6 +92,14 @@ public class MainFrame extends JFrame {
         sidebarPanel.add(btnStudent);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnTeacher);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnStaff);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnRoom);
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnSchedule); // LỊCH HỌC
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnTimetable); // XEM TKB
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnCourse);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));

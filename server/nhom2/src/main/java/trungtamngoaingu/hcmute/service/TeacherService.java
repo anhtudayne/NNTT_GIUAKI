@@ -42,6 +42,10 @@ public class TeacherService {
 
     /**
      * Dùng Stream API để tìm giảng viên theo Tên (FullName)
+     * Giải thích:
+     * - allTeachers.stream(): Tạo một luồng tuần tự (Sequential Stream) đi qua mọi Giáo viên.
+     * - .filter(): Lambda Expression nhận t (Teacher) và trả về true nếu Tên có chứa từ khóa (query). 
+     * - .toList(): Trả về ArrayList chứa mọi Object được đánh giá true bởi bộ giải filter.
      */
     public List<Teacher> searchTeachersByName(String keyword) {
         List<Teacher> allTeachers = teacherRepository.findAll();
@@ -57,6 +61,9 @@ public class TeacherService {
 
     /**
      * Dùng Stream API để lọc danh sách giảng viên đang làm việc (Active)
+     * Giải thích:
+     * - Pipeline Data sẽ đi từ collection thông qua filter để so sánh hằng số Enum.
+     * - Đây là biểu mẫu chuẩn mực cho Functional Programming tại Java nhằm trích xuất Sublist tốc độ cao trên RAM.
      */
     public List<Teacher> getActiveTeachers() {
         return teacherRepository.findAll().stream()

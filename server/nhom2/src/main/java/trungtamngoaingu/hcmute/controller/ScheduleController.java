@@ -47,4 +47,34 @@ public class ScheduleController {
         scheduleService.deleteSchedule(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ===================================================================================
+    // TÍNH NĂNG KHÓ: KIỂM TRA PHÒNG TRỐNG VÀ GIÁO VIÊN RẢNH BẰNG STREAM API (LAMBDA)
+    // ===================================================================================
+
+    @GetMapping("/available-rooms")
+    public ResponseEntity<List<trungtamngoaingu.hcmute.entity.Room>> getAvailableRooms(
+            @RequestParam("date") String dateStr,
+            @RequestParam("start") String startStr,
+            @RequestParam("end") String endStr) {
+        java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
+        java.time.LocalTime start = java.time.LocalTime.parse(startStr);
+        java.time.LocalTime end = java.time.LocalTime.parse(endStr);
+        
+        List<trungtamngoaingu.hcmute.entity.Room> rooms = scheduleService.getAvailableRooms(date, start, end);
+        return ResponseEntity.ok(rooms);
+    }
+
+    @GetMapping("/available-teachers")
+    public ResponseEntity<List<trungtamngoaingu.hcmute.entity.Teacher>> getAvailableTeachers(
+            @RequestParam("date") String dateStr,
+            @RequestParam("start") String startStr,
+            @RequestParam("end") String endStr) {
+        java.time.LocalDate date = java.time.LocalDate.parse(dateStr);
+        java.time.LocalTime start = java.time.LocalTime.parse(startStr);
+        java.time.LocalTime end = java.time.LocalTime.parse(endStr);
+        
+        List<trungtamngoaingu.hcmute.entity.Teacher> teachers = scheduleService.getAvailableTeachers(date, start, end);
+        return ResponseEntity.ok(teachers);
+    }
 }
