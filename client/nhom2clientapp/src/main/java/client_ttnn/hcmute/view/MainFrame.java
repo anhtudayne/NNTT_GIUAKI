@@ -47,6 +47,7 @@ public class MainFrame extends JFrame {
         RoomManagerPanel roomPanel = new RoomManagerPanel(); // PHÒNG HỌC MỚI THÊM
         ScheduleManagerPanel schedulePanel = new ScheduleManagerPanel(); // LỊCH HỌC
         TimetableViewPanel timetablePanel = new TimetableViewPanel(); // XEM TKB
+        AttendanceManagerPanel attendancePanel = new AttendanceManagerPanel(); // ĐIỂM DANH LỚP
         CourseManagerPanel coursePanel = new CourseManagerPanel();
         ClassManagerPanel classPanel = new ClassManagerPanel();
         EnrollmentManagerPanel enrollmentPanel = new EnrollmentManagerPanel();
@@ -60,6 +61,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(roomPanel, "RoomPanel"); 
         contentPanel.add(schedulePanel, "SchedulePanel"); // LỊCH HỌC
         contentPanel.add(timetablePanel, "TimetablePanel"); // XEM TKB
+        contentPanel.add(attendancePanel, "AttendancePanel"); // ĐIỂM DANH LỚP
         contentPanel.add(coursePanel, "CoursePanel");
         contentPanel.add(classPanel, "ClassPanel");
         contentPanel.add(enrollmentPanel, "EnrollmentPanel");
@@ -73,6 +75,7 @@ public class MainFrame extends JFrame {
         JButton btnRoom = createMenuButton("Quản Lý Phòng Học"); 
         JButton btnSchedule = createMenuButton("Xếp Lịch Học"); // LỊCH HỌC
         JButton btnTimetable = createMenuButton("Xem Thời Khoá Biểu"); // XEM TKB
+        JButton btnAttendance = createMenuButton("Điểm Danh Lớp"); // ĐIỂM DANH LỚP
         JButton btnCourse = createMenuButton("Quản Lý Khóa Học");
         JButton btnClass = createMenuButton("Quản Lý Lớp Học");
         JButton btnEnrollment = createMenuButton("Quản Lý Ghi Danh");
@@ -86,6 +89,7 @@ public class MainFrame extends JFrame {
         btnRoom.addActionListener(e -> cardLayout.show(contentPanel, "RoomPanel")); 
         btnSchedule.addActionListener(e -> cardLayout.show(contentPanel, "SchedulePanel")); // LỊCH HỌC
         btnTimetable.addActionListener(e -> cardLayout.show(contentPanel, "TimetablePanel")); // XEM TKB
+        btnAttendance.addActionListener(e -> cardLayout.show(contentPanel, "AttendancePanel")); // ĐIỂM DANH LỚP
         btnCourse.addActionListener(e -> cardLayout.show(contentPanel, "CoursePanel"));
         btnClass.addActionListener(e -> cardLayout.show(contentPanel, "ClassPanel"));
         btnEnrollment.addActionListener(e -> cardLayout.show(contentPanel, "EnrollmentPanel"));
@@ -103,6 +107,8 @@ public class MainFrame extends JFrame {
         sidebarPanel.add(btnSchedule); // LỊCH HỌC
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnTimetable); // XEM TKB
+        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
+        sidebarPanel.add(btnAttendance); // ĐIỂM DANH LỚP
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnCourse);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -126,7 +132,9 @@ public class MainFrame extends JFrame {
             btnEnrollment.setVisible(false);
             btnPlacementTest.setVisible(false);
             btnCertificate.setVisible(false);
-            // Teacher chỉ được xếp lịch và Xem TKB
+            // Teacher chỉ được xếp lịch, Xem TKB và THỰC HIỆN ĐIỂM DANH
+            // Nút btnAttendance KHÔNG BỊ setVisible(false) -> Giáo viên được quyền truy cập!
+            
             // Mở mặc định Tab TKB cho Teacher lúc vào
             cardLayout.show(contentPanel, "TimetablePanel"); 
         }

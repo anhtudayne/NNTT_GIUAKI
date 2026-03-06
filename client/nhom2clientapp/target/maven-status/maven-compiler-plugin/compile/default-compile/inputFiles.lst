@@ -1,4 +1,5 @@
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/App.java
+/Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/model/Attendance.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/model/Certificate.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/model/Classes.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/model/Course.java
@@ -10,6 +11,7 @@
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/model/Student.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/model/Teacher.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/model/UserAccount.java
+/Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/service/AttendanceApiService.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/service/AuthApiService.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/service/CertificateApiService.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/service/ClassesApiService.java
@@ -21,6 +23,7 @@
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/service/StaffApiService.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/service/StudentApiService.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/service/TeacherApiService.java
+/Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/view/AttendanceManagerPanel.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/view/CertificateManagerPanel.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/view/ClassManagerPanel.java
 /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp/src/main/java/client_ttnn/hcmute/view/CourseManagerPanel.java

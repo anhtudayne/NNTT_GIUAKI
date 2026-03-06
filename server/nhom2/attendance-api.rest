@@ -1,0 +1,31 @@
+### File API REST test Giai đoạn 4: ĐIỂM DANH (ATTENDANCE)
+
+### 1/ Lấy toàn bộ danh sách Học viên của 1 Lớp (Giả sử test với Lớp có ClassID = 1)
+GET http://localhost:8080/api/attendances/class/1/students
+
+### 
+
+### 2/ Lưu đồng loạt (Batch-save) danh sách Điểm danh
+POST http://localhost:8080/api/attendances/batch-save
+Content-Type: application/json
+
+[
+  {
+    "student": { "studentId": 1 },
+    "classEntity": { "classId": 1 },
+    "date": "2026-03-07",
+    "status": "Present"
+  },
+  {
+    "student": { "studentId": 2 },
+    "classEntity": { "classId": 1 },
+    "date": "2026-03-07",
+    "status": "Absent"
+  },
+  {
+    "student": { "studentId": 3 },
+    "classEntity": { "classId": 1 },
+    "date": "2026-03-07",
+    "status": "Late"
+  }
+]

@@ -47,4 +47,25 @@ public class AttendanceController {
         attendanceService.deleteAttendance(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ===================================================================================
+    // TÍNH NĂNG GIAI ĐOẠN 4: ĐIỂM DANH HÀNG LOẠT LỚP HỌC
+    // ===================================================================================
+
+    // Lấy toàn bộ danh sách Học viên của 1 Lớp (Thông qua Enrollment) để hiện lên Grid điểm danh
+    @GetMapping("/class/{classId}/students")
+    public ResponseEntity<List<trungtamngoaingu.hcmute.entity.Student>> getStudentsByClassId(@PathVariable Integer classId) {
+        List<trungtamngoaingu.hcmute.entity.Student> students = attendanceService.getStudentsByClassId(classId);
+        return ResponseEntity.ok(students);
+    }
+
+    // Lưu hàng loạt Điểm danh của cả 1 lớp bằng 1 API duy nhất
+    @PostMapping("/batch-save")
+    public ResponseEntity<List<Attendance>> saveBatchAttendances(@RequestBody List<Attendance> attendances) {
+        if (attendances == null || attendances.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<Attendance> saved = attendanceService.saveBatchAttendances(attendances);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
 }
