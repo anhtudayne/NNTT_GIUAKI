@@ -1,0 +1,15 @@
+### Java & Maven build
+target/
+*.class
+
+### Logs
+*.log
+
+### IDE files (IntelliJ / Eclipse / VS Code, etc.)
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+
