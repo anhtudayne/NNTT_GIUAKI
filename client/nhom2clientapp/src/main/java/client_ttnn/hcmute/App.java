@@ -15,9 +15,11 @@ public class App {
         }
 
         // Đảm bảo tạo UI trong Thread an toàn của Swing
-        SwingUtilities.invokeLater(() -> {
-            client_ttnn.hcmute.view.LoginFrame loginFrame = new client_ttnn.hcmute.view.LoginFrame();
-            loginFrame.setVisible(true);
-        });
+        // SwingUtilities.invokeLater(() -> {
+        //     client_ttnn.hcmute.view.LoginFrame loginFrame = new client_ttnn.hcmute.view.LoginFrame();
+        //     loginFrame.setVisible(true);
+        // });
+        client_ttnn.hcmute.view.MainFrame mainFrame = new client_ttnn.hcmute.view.MainFrame(null);
+        mainFrame.setVisible(true);
     }
 }
