@@ -4,13 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Class;
 import trungtamngoaingu.hcmute.repository.ClassRepository;
+import trungtamngoaingu.hcmute.repository.EnrollmentRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ClassService {
     @Autowired
     private ClassRepository classRepository;
+
+    @Autowired
+    private EnrollmentRepository enrollmentRepository;
 
     public List<Class> getAllClasses() {
         return classRepository.myGetAll();
@@ -48,27 +53,24 @@ public class ClassService {
                 .ifPresent(c -> classRepository.deleteById(c.getClassId()));
     }
 
-    // public Optional<Class> getClassById(Integer id) {
-    //     return classRepository.findById(id);
-    // }
-
-    // public Class createClass(Class clazz) {
-    //     return classRepository.save(clazz);
-    // }
-
-    // public Class updateClass(Integer id, Class clazz) {
-    //     if (classRepository.existsById(id)) {
-    //         clazz.setClassId(id);
-    //         return classRepository.save(clazz);
-    //     }
-    //     return null;
-    // }
-
-    // public void deleteClass(Integer id) {
-    //     classRepository.deleteById(id);
-    // }
-
     public List<Class> searchClassesByName(String name) {
         return classRepository.searchByName(name);
+    }
+
+    // 5. Lấy danh sách các lớp học mà 1 học sinh đã hoặc đang tham gia
+    public List<Class> getClassesByStudentId(Integer studentId) {
+        return enrollmentRepository.myGetAll().stream()
+                .filter(enrollment -> enrollment.getStudent() != null 
+                        && enrollment.getStudent().getStudentId().equals(studentId))
+                .map(enrollment -> enrollment.getClassEntity())
+                .collect(Collectors.toList());
+    }
+
+    // 6. Lấy danh sách các lớp học mà 1 giáo viên đang dạy
+    public List<Class> getClassesByTeacherId(Integer teacherId) {
+        return classRepository.myGetAll().stream()
+                .filter(c -> c.getTeacher() != null 
+                        && c.getTeacher().getTeacherId().equals(teacherId))
+                .collect(Collectors.toList());
     }
 }

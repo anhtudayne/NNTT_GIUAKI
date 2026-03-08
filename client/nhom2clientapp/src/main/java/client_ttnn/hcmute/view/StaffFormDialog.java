@@ -5,7 +5,11 @@ import client_ttnn.hcmute.service.StaffApiService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.util.regex.Pattern;
 
 public class StaffFormDialog extends JDialog {
 
@@ -18,6 +22,11 @@ public class StaffFormDialog extends JDialog {
     private JTextField txtPhone;
     private JTextField txtEmail;
     private JComboBox<String> cmbRole;
+    
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile(
+        "^[0-9]{10,11}$");
 
     public StaffFormDialog(Window owner, StaffApiService apiService,
                            boolean isEditMode, Staff initialStaff, Runnable onSuccess) {
@@ -40,10 +49,31 @@ public class StaffFormDialog extends JDialog {
     private void initComponents() {
         JPanel content = new JPanel(new BorderLayout(15, 15));
         content.setBorder(new EmptyBorder(20, 24, 20, 24));
-        content.setBackground(Color.WHITE);
+        content.setBackground(new Color(245, 247, 250));
+        
+        // Title Panel
+        JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(new Color(52, 152, 219));
+        titlePanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+        JLabel titleLabel = new JLabel(isEditMode ? "Cập nhật nhân sự" : "Thêm nhân sự mới");
+        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+        titleLabel.setForeground(Color.WHITE);
+        titlePanel.add(titleLabel);
+        content.add(titlePanel, BorderLayout.NORTH);
 
         JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.WHITE);
+        formPanel.setBackground(new Color(245, 247, 250));
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            new EmptyBorder(15, 10, 15, 10),
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
+                "Thông tin nhân sự",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font(Font.SANS_SERIF, Font.BOLD, 14),
+                new Color(52, 73, 94)
+            )
+        ));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 10, 8, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -57,44 +87,77 @@ public class StaffFormDialog extends JDialog {
 
         int fieldCols = 42;
         txtFullName = new JTextField(fieldCols);
+        txtFullName.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        
         txtPhone = new JTextField(fieldCols);
+        txtPhone.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        txtPhone.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                validatePhone();
+            }
+        });
+        
         txtEmail = new JTextField(fieldCols);
+        txtEmail.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        txtEmail.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusLost(FocusEvent e) {
+                validateEmail();
+            }
+        });
+        
         cmbRole = new JComboBox<>(new String[]{"Admin", "Consultant", "Accountant"});
-        cmbRole.setPreferredSize(new Dimension(txtFullName.getPreferredSize().width, cmbRole.getPreferredSize().height));
+        cmbRole.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        cmbRole.setPreferredSize(new Dimension(txtFullName.getPreferredSize().width, 30));
 
         int row = 0;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Họ và tên:"), gbc);
+        JLabel lblName = new JLabel("Họ và tên:");
+        lblName.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblName, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(txtFullName, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Điện thoại:"), gbc);
+        JLabel lblPhone = new JLabel("Điện thoại:");
+        lblPhone.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblPhone, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(txtPhone, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Email:"), gbc);
+        JLabel lblEmail = new JLabel("Email:");
+        lblEmail.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblEmail, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(txtEmail, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Chức vụ:"), gbc);
+        JLabel lblRole = new JLabel("Chức vụ:");
+        lblRole.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblRole, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(cmbRole, gbcField);
 
         content.add(formPanel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
-        buttonPanel.setBackground(Color.WHITE);
-        Dimension refBtnSize = new JButton("Tìm kiếm").getPreferredSize();
+        buttonPanel.setBackground(new Color(245, 247, 250));
 
         JButton btnSave = new JButton("Lưu");
-        btnSave.setPreferredSize(refBtnSize);
-        btnSave.setMinimumSize(refBtnSize);
+        btnSave.setPreferredSize(new Dimension(100, 35));
+        btnSave.setBackground(new Color(46, 204, 113));
+        btnSave.setForeground(Color.WHITE);
+        btnSave.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        btnSave.setFocusPainted(false);
+        
         JButton btnCancel = new JButton("Hủy");
-        btnCancel.setPreferredSize(refBtnSize);
-        btnCancel.setMinimumSize(refBtnSize);
+        btnCancel.setPreferredSize(new Dimension(100, 35));
+        btnCancel.setBackground(new Color(231, 76, 60));
+        btnCancel.setForeground(Color.WHITE);
+        btnCancel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        btnCancel.setFocusPainted(false);
 
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());
@@ -125,9 +188,46 @@ public class StaffFormDialog extends JDialog {
         return s;
     }
 
+    private boolean validateEmail() {
+        String email = txtEmail.getText().trim();
+        if (!email.isEmpty() && !EMAIL_PATTERN.matcher(email).matches()) {
+            txtEmail.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            txtEmail.setToolTipText("Email không hợp lệ");
+            return false;
+        } else {
+            txtEmail.setBorder(UIManager.getBorder("TextField.border"));
+            txtEmail.setToolTipText(null);
+            return true;
+        }
+    }
+    
+    private boolean validatePhone() {
+        String phone = txtPhone.getText().trim();
+        if (!phone.isEmpty() && !PHONE_PATTERN.matcher(phone).matches()) {
+            txtPhone.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            txtPhone.setToolTipText("Số điện thoại phải có 10-11 chữ số");
+            return false;
+        } else {
+            txtPhone.setBorder(UIManager.getBorder("TextField.border"));
+            txtPhone.setToolTipText(null);
+            return true;
+        }
+    }
+    
     private boolean validateForm() {
         if (txtFullName.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập họ và tên.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            txtFullName.requestFocus();
+            return false;
+        }
+        if (!txtEmail.getText().trim().isEmpty() && !validateEmail()) {
+            JOptionPane.showMessageDialog(this, "Email không hợp lệ.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            txtEmail.requestFocus();
+            return false;
+        }
+        if (!txtPhone.getText().trim().isEmpty() && !validatePhone()) {
+            JOptionPane.showMessageDialog(this, "Số điện thoại không hợp lệ.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            txtPhone.requestFocus();
             return false;
         }
         return true;

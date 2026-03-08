@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import trungtamngoaingu.hcmute.entity.Class;
 import trungtamngoaingu.hcmute.entity.Teacher;
+import trungtamngoaingu.hcmute.service.ClassService;
 import trungtamngoaingu.hcmute.service.TeacherService;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +17,9 @@ import java.util.Optional;
 public class TeacherController {
     @Autowired
     private TeacherService teacherService;
+
+    @Autowired
+    private ClassService classService;
 
     @GetMapping
     public ResponseEntity<List<Teacher>> getAllTeachers() {
@@ -63,5 +68,10 @@ public class TeacherController {
     @GetMapping("/specialty")
     public ResponseEntity<List<Teacher>> getTeachersBySpecialty(@RequestParam String specialty) {
         return ResponseEntity.ok(teacherService.getTeachersBySpecialty(specialty));
+    }
+
+    @GetMapping("/{id}/classes")
+    public ResponseEntity<List<Class>> getTeachingClasses(@PathVariable Integer id) {
+        return ResponseEntity.ok(classService.getClassesByTeacherId(id));
     }
 }

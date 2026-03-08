@@ -66,4 +66,16 @@ public class StudentService {
         return studentRepository.searchByName(name);
     }
     // Tìm kiếm sinh viên theo tên
+
+    /**
+     * Dùng Stream API để lọc danh sách giảng viên đang làm việc (Active)
+     * Giải thích:
+     * - Pipeline Data sẽ đi từ collection thông qua filter để so sánh hằng số Enum.
+     * - Đây là biểu mẫu chuẩn mực cho Functional Programming tại Java nhằm trích xuất Sublist tốc độ cao trên RAM.
+     */
+    public List<Student> getActiveStudents() {
+        return studentRepository.myGetAll().stream()
+                .filter(t -> t.getStatus() == Student.Status.Active)
+                .toList();
+    }
 }

@@ -111,6 +111,15 @@ GET /api/students/search?name=Nguyen
   }
 ]
 ```
+### 1.7 Get active Students
+```
+GET /api/students/active
+```
+
+### 1.8 Get classes of a Student by student's Id
+```
+GET /api/students/1/classes
+```
 
 ## 2. Teachers API (`/api/teachers`)
 
@@ -157,6 +166,11 @@ Content-Type: application/json
 ### 2.5 DELETE Teacher
 ```
 DELETE /api/teachers/1
+```
+
+### 2.6 GET classes of Teacher by id
+```
+GET /api/teachers/1/classes
 ```
 
 ## 3. Courses API (`/api/courses`)

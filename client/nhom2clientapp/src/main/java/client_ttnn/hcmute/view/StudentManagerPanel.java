@@ -19,8 +19,10 @@ public class StudentManagerPanel extends JPanel {
     private JTable studentTable;
     private DefaultTableModel tableModel;
     private JTextField txtSearch;
+    private JCheckBox chkActiveOnly;
     private JButton btnEdit;
     private JButton btnDelete;
+    private JButton btnDetails;
     private Long selectedStudentId = null;
 
     public StudentManagerPanel() {
@@ -35,16 +37,48 @@ public class StudentManagerPanel extends JPanel {
     private void initComponents() {
         // ----- Thanh công cụ: tìm kiếm + Làm mới -----
         JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        toolbarPanel.setBackground(Color.WHITE);
-        toolbarPanel.add(new JLabel("Tìm theo tên:"));
+        toolbarPanel.setBackground(new Color(236, 240, 241));
+        toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(52, 152, 219)),
+            new EmptyBorder(10, 10, 10, 10)
+        ));
+        
+        JLabel lblSearch = new JLabel("🔍 Tìm theo tên:");
+        lblSearch.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        toolbarPanel.add(lblSearch);
         txtSearch = new JTextField(22);
+        txtSearch.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        txtSearch.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         toolbarPanel.add(txtSearch);
+        
         JButton btnSearch = new JButton("Tìm kiếm");
+        btnSearch.setBackground(new Color(52, 152, 219));
+        btnSearch.setForeground(Color.WHITE);
+        btnSearch.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        btnSearch.setFocusPainted(false);
+        btnSearch.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSearch.addActionListener(e -> searchStudents());
         toolbarPanel.add(btnSearch);
         Dimension refButtonSize = btnSearch.getPreferredSize();
+        
+        toolbarPanel.add(Box.createRigidArea(new Dimension(15, 0)));
+        chkActiveOnly = new JCheckBox("✓ Chỉ hiển thị Active");
+        chkActiveOnly.setBackground(new Color(236, 240, 241));
+        chkActiveOnly.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        chkActiveOnly.addActionListener(e -> applyCurrentFilter());
+        toolbarPanel.add(chkActiveOnly);
 
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = new JButton("⟳ Làm mới");
+        btnRefresh.setBackground(new Color(149, 165, 166));
+        btnRefresh.setForeground(Color.WHITE);
+        btnRefresh.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        btnRefresh.setFocusPainted(false);
+        btnRefresh.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefresh.addActionListener(e -> loadStudents());
         toolbarPanel.add(btnRefresh);
 
@@ -59,13 +93,18 @@ public class StudentManagerPanel extends JPanel {
             }
         };
         studentTable = new JTable(tableModel);
-        studentTable.setRowHeight(32);
+        studentTable.setRowHeight(36);
         studentTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         studentTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        studentTable.getTableHeader().setBackground(new Color(245, 245, 245));
+        studentTable.getTableHeader().setBackground(new Color(52, 73, 94));
+        studentTable.getTableHeader().setForeground(Color.WHITE);
+        studentTable.getTableHeader().setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
         studentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        studentTable.setSelectionBackground(new Color(174, 214, 241));
+        studentTable.setSelectionForeground(new Color(44, 62, 80));
         studentTable.setShowGrid(true);
         studentTable.setGridColor(new Color(220, 220, 220));
+        studentTable.setIntercellSpacing(new Dimension(1, 1));
 
         studentTable.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
@@ -85,26 +124,57 @@ public class StudentManagerPanel extends JPanel {
         bottomPanel.setMinimumSize(new Dimension(400, 50));
 
         // Lấy kích thước nút "Tìm kiếm" làm chuẩn cho Thêm / Sửa / Xóa
-        Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
-        JButton btnAdd = new JButton("Thêm");
+        Dimension btnSize = new Dimension(130, 40);
+        JButton btnAdd = new JButton("➕ Thêm");
         btnAdd.setPreferredSize(btnSize);
         btnAdd.setMinimumSize(btnSize);
+        btnAdd.setBackground(new Color(46, 204, 113));
+        btnAdd.setForeground(Color.WHITE);
+        btnAdd.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        btnAdd.setFocusPainted(false);
+        btnAdd.setBorderPainted(false);
+        btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnAdd.addActionListener(e -> openAddDialog());
 
-        btnEdit = new JButton("Sửa");
+        btnEdit = new JButton("✏️ Xem/Sửa");
         btnEdit.setPreferredSize(btnSize);
         btnEdit.setMinimumSize(btnSize);
         btnEdit.setEnabled(false);
+        btnEdit.setBackground(new Color(241, 196, 15));
+        btnEdit.setForeground(Color.WHITE);
+        btnEdit.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        btnEdit.setFocusPainted(false);
+        btnEdit.setBorderPainted(false);
+        btnEdit.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnEdit.addActionListener(e -> openEditDialog());
 
-        btnDelete = new JButton("Xóa");
+        btnDetails = new JButton("📊 Chi tiết");
+        btnDetails.setPreferredSize(btnSize);
+        btnDetails.setMinimumSize(btnSize);
+        btnDetails.setEnabled(false);
+        btnDetails.setBackground(new Color(155, 89, 182));
+        btnDetails.setForeground(Color.WHITE);
+        btnDetails.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        btnDetails.setFocusPainted(false);
+        btnDetails.setBorderPainted(false);
+        btnDetails.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnDetails.addActionListener(e -> openDetailDialog());
+
+        btnDelete = new JButton("🗑️ Xóa");
         btnDelete.setPreferredSize(btnSize);
         btnDelete.setMinimumSize(btnSize);
         btnDelete.setEnabled(false);
+        btnDelete.setBackground(new Color(231, 76, 60));
+        btnDelete.setForeground(Color.WHITE);
+        btnDelete.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        btnDelete.setFocusPainted(false);
+        btnDelete.setBorderPainted(false);
+        btnDelete.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnDelete.addActionListener(e -> deleteStudent());
 
         bottomPanel.add(btnAdd);
         bottomPanel.add(btnEdit);
+        bottomPanel.add(btnDetails);
         bottomPanel.add(btnDelete);
 
         add(bottomPanel, BorderLayout.SOUTH);
@@ -117,10 +187,12 @@ public class StudentManagerPanel extends JPanel {
             selectedStudentId = idVal != null ? ((Number) idVal).longValue() : null;
             btnEdit.setEnabled(true);
             btnDelete.setEnabled(true);
+            btnDetails.setEnabled(true);
         } else {
             selectedStudentId = null;
             btnEdit.setEnabled(false);
             btnDelete.setEnabled(false);
+            btnDetails.setEnabled(false);
         }
     }
 
@@ -145,6 +217,18 @@ public class StudentManagerPanel extends JPanel {
                 true,
                 selected,
                 this::loadStudents
+        );
+        dlg.setVisible(true);
+    }
+
+    private void openDetailDialog() {
+        if (selectedStudentId == null) return;
+        Student selected = getSelectedStudentFromTable();
+        if (selected == null) return;
+        StudentDetailDialog dlg = new StudentDetailDialog(
+                (Window) SwingUtilities.getWindowAncestor(this),
+                apiService,
+                selected
         );
         dlg.setVisible(true);
     }
@@ -180,6 +264,15 @@ public class StudentManagerPanel extends JPanel {
                     "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
+    
+    private void applyCurrentFilter() {
+        String searchText = txtSearch.getText().trim();
+        if (searchText.isEmpty()) {
+            loadStudents();
+        } else {
+            searchStudents();
+        }
+    }
 
     private void searchStudents() {
         String searchText = txtSearch.getText().trim();
@@ -201,7 +294,11 @@ public class StudentManagerPanel extends JPanel {
 
     private void updateTable(List<Student> students) {
         tableModel.setRowCount(0);
+        boolean filterActive = chkActiveOnly.isSelected();
         for (Student s : students) {
+            if (filterActive && !"Active".equalsIgnoreCase(s.getStatus())) {
+                continue;
+            }
             tableModel.addRow(new Object[]{
                     s.getId(),
                     s.getFullName(),

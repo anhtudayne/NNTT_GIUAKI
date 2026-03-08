@@ -1,5 +1,6 @@
 package client_ttnn.hcmute.service;
 
+import client_ttnn.hcmute.model.Classes;
 import client_ttnn.hcmute.model.Teacher;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -93,5 +94,19 @@ public class TeacherApiService {
         if (response.statusCode() != 204 && response.statusCode() != 200) {
             throw new Exception("Lỗi xóa giảng viên: " + response.statusCode());
         }
+    }
+
+    // GET Teacher's Classes
+    public List<Classes> getTeacherClasses(Integer teacherId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/" + teacherId + "/classes"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return gson.fromJson(response.body(), new TypeToken<List<Classes>>(){}.getType());
+        }
+        throw new Exception("Lỗi tải danh sách lớp của giảng viên: " + response.statusCode());
     }
 }

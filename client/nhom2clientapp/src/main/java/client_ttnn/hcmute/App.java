@@ -2,8 +2,6 @@ package client_ttnn.hcmute;
 
 import com.formdev.flatlaf.FlatLightLaf;
 
-import javax.swing.SwingUtilities;
-
 public class App {
     public static void main(String[] args) {
         try {

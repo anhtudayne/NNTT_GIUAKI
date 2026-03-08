@@ -6,4 +6,4 @@ http://localhost:8080/api
 ```
 
 ###
-GET http://localhost:8080/api/classes/1
+GET http://localhost:8080/api/teachers/1/classes

@@ -120,4 +120,20 @@ public class StudentApiService {
             throw new Exception("Failed to search students: " + response.statusCode());
         }
     }
+
+    // GET Student's Classes
+    public List<client_ttnn.hcmute.model.Classes> getStudentClasses(Long studentId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/" + studentId + "/classes"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        if (response.statusCode() == 200) {
+            return gson.fromJson(response.body(), new TypeToken<List<client_ttnn.hcmute.model.Classes>>(){}.getType());
+        } else {
+            throw new Exception("Failed to get student classes: " + response.statusCode());
+        }
+    }
 }

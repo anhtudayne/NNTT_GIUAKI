@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import trungtamngoaingu.hcmute.entity.Student;
+import trungtamngoaingu.hcmute.entity.Class;
 import trungtamngoaingu.hcmute.service.StudentService;
+import trungtamngoaingu.hcmute.service.ClassService;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +17,9 @@ import java.util.Optional;
 public class StudentController {
     @Autowired
     private StudentService studentService;
+
+    @Autowired
+    private ClassService classService;
 
     @GetMapping
     public ResponseEntity<List<Student>> getAllStudents() {
@@ -52,5 +57,15 @@ public class StudentController {
     public ResponseEntity<List<Student>> searchStudentsByName(@RequestParam String name) {
         List<Student> students = studentService.searchStudentsByName(name);
         return ResponseEntity.ok(students);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<Student>> getActiveStudent() {
+        return ResponseEntity.ok(studentService.getActiveStudents());
+    }
+
+    @GetMapping("/{id}/classes")
+    public ResponseEntity<List<Class>> getStudyingClass(@PathVariable Integer id) {
+        return ResponseEntity.ok(classService.getClassesByStudentId(id));
     }
 }

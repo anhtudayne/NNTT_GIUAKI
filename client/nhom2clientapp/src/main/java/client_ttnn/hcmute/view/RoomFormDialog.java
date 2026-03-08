@@ -5,6 +5,7 @@ import client_ttnn.hcmute.service.RoomApiService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class RoomFormDialog extends JDialog {
@@ -40,10 +41,31 @@ public class RoomFormDialog extends JDialog {
     private void initComponents() {
         JPanel content = new JPanel(new BorderLayout(15, 15));
         content.setBorder(new EmptyBorder(20, 24, 20, 24));
-        content.setBackground(Color.WHITE);
+        content.setBackground(new Color(245, 247, 250));
+        
+        // Title Panel
+        JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(new Color(52, 152, 219));
+        titlePanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+        JLabel titleLabel = new JLabel(isEditMode ? "Cập nhật phòng học" : "Thêm phòng học mới");
+        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+        titleLabel.setForeground(Color.WHITE);
+        titlePanel.add(titleLabel);
+        content.add(titlePanel, BorderLayout.NORTH);
 
         JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.WHITE);
+        formPanel.setBackground(new Color(245, 247, 250));
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            new EmptyBorder(15, 10, 15, 10),
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
+                "Thông tin phòng học",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font(Font.SANS_SERIF, Font.BOLD, 14),
+                new Color(52, 73, 94)
+            )
+        ));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 10, 8, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -57,44 +79,65 @@ public class RoomFormDialog extends JDialog {
 
         int fieldCols = 42;
         txtRoomName = new JTextField(fieldCols);
+        txtRoomName.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        
         txtCapacity = new JTextField(fieldCols);
+        txtCapacity.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        
         txtLocation = new JTextField(fieldCols);
+        txtLocation.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        
         cmbStatus = new JComboBox<>(new String[]{"Available", "Maintenance", "Inactive"});
-        cmbStatus.setPreferredSize(new Dimension(txtRoomName.getPreferredSize().width, cmbStatus.getPreferredSize().height));
+        cmbStatus.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        cmbStatus.setPreferredSize(new Dimension(txtRoomName.getPreferredSize().width, 30));
 
         int row = 0;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Tên phòng:"), gbc);
+        JLabel lblName = new JLabel("Tên phòng:");
+        lblName.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblName, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(txtRoomName, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Sức chứa:"), gbc);
+        JLabel lblCapacity = new JLabel("Sức chứa:");
+        lblCapacity.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblCapacity, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(txtCapacity, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Vị trí:"), gbc);
+        JLabel lblLocation = new JLabel("Vị trí:");
+        lblLocation.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblLocation, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(txtLocation, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Trạng thái:"), gbc);
+        JLabel lblStatus = new JLabel("Trạng thái:");
+        lblStatus.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblStatus, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(cmbStatus, gbcField);
 
         content.add(formPanel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
-        buttonPanel.setBackground(Color.WHITE);
-        Dimension refBtnSize = new JButton("Tìm kiếm").getPreferredSize();
+        buttonPanel.setBackground(new Color(245, 247, 250));
 
         JButton btnSave = new JButton("Lưu");
-        btnSave.setPreferredSize(refBtnSize);
-        btnSave.setMinimumSize(refBtnSize);
+        btnSave.setPreferredSize(new Dimension(100, 35));
+        btnSave.setBackground(new Color(46, 204, 113));
+        btnSave.setForeground(Color.WHITE);
+        btnSave.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        btnSave.setFocusPainted(false);
+        
         JButton btnCancel = new JButton("Hủy");
-        btnCancel.setPreferredSize(refBtnSize);
-        btnCancel.setMinimumSize(refBtnSize);
+        btnCancel.setPreferredSize(new Dimension(100, 35));
+        btnCancel.setBackground(new Color(231, 76, 60));
+        btnCancel.setForeground(Color.WHITE);
+        btnCancel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        btnCancel.setFocusPainted(false);
 
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());
@@ -132,12 +175,14 @@ public class RoomFormDialog extends JDialog {
     private boolean validateForm() {
         if (txtRoomName.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng nhập tên phòng.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            txtRoomName.requestFocus();
             return false;
         }
         try {
             Integer.parseInt(txtCapacity.getText().trim());
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Sức chứa phải là số nguyên.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            txtCapacity.requestFocus();
             return false;
         }
         return true;
