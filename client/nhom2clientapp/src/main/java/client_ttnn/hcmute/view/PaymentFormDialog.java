@@ -5,9 +5,15 @@ import client_ttnn.hcmute.model.Payment;
 import client_ttnn.hcmute.model.Student;
 import client_ttnn.hcmute.service.PaymentApiService;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 
 public class PaymentFormDialog extends JDialog {
@@ -152,13 +158,55 @@ public class PaymentFormDialog extends JDialog {
                 apiService.updatePayment(initial.getPaymentId(), p);
                 JOptionPane.showMessageDialog(this, "Cập nhật thành công.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
             } else {
-                apiService.createPayment(p);
+                Payment created = apiService.createPayment(p);
                 JOptionPane.showMessageDialog(this, "Thêm thanh toán thành công.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                if ("Momo".equals(p.getPaymentMethod()) && created != null) {
+                    showMomoQrDialog(created.getAmount(), created.getPaymentId());
+                }
             }
             if (onSuccess != null) onSuccess.run();
             dispose();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void showMomoQrDialog(BigDecimal amount, Long paymentId) {
+        String amountStr = amount != null ? String.format("%,d", amount.longValue()) : "0";
+        String qrContent = String.format("MOMO|%s|Thanh toán học phí|ID:%s",
+                amount != null ? amount.longValue() : 0,
+                paymentId != null ? paymentId : "");
+        BufferedImage qrImage = createQrImage(qrContent, 260, 260);
+        if (qrImage == null) return;
+
+        Window owner = getOwner() != null ? getOwner() : (Window) this;
+        JDialog qrDialog = new JDialog(owner, "Quét mã MoMo", ModalityType.MODELESS);
+        qrDialog.setLocationRelativeTo(owner);
+        JPanel panel = new JPanel(new BorderLayout(16, 16));
+        panel.setBorder(new EmptyBorder(24, 24, 24, 24));
+        panel.setBackground(Color.WHITE);
+        JLabel lblTitle = new JLabel("Quét mã QR để thanh toán bằng MoMo");
+        lblTitle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+        panel.add(lblTitle, BorderLayout.NORTH);
+        JLabel lblQr = new JLabel(new ImageIcon(qrImage));
+        panel.add(lblQr, BorderLayout.CENTER);
+        JLabel lblAmount = new JLabel("Số tiền: " + amountStr + " VND");
+        lblAmount.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        lblAmount.setHorizontalAlignment(SwingConstants.CENTER);
+        panel.add(lblAmount, BorderLayout.SOUTH);
+        qrDialog.setContentPane(panel);
+        qrDialog.pack();
+        qrDialog.setLocationRelativeTo(this);
+        qrDialog.setVisible(true);
+    }
+
+    private static BufferedImage createQrImage(String content, int width, int height) {
+        try {
+            QRCodeWriter writer = new QRCodeWriter();
+            BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, width, height);
+            return MatrixToImageWriter.toBufferedImage(matrix);
+        } catch (Exception e) {
+            return null;
         }
     }
 
