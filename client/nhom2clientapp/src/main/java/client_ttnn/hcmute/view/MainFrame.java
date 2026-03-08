@@ -54,27 +54,23 @@ public class MainFrame extends JFrame {
         EnrollmentManagerPanel enrollmentPanel = new EnrollmentManagerPanel();
         PlacementTestManagerPanel placementTestPanel = new PlacementTestManagerPanel();
         CertificateManagerPanel certificatePanel = new CertificateManagerPanel();
-        InvoiceManagerPanel invoicePanel = new InvoiceManagerPanel();
-        PaymentManagerPanel paymentPanel = new PaymentManagerPanel();
-        PromotionManagerPanel promotionPanel = new PromotionManagerPanel();
-        
+        FinanceManagerPanel financePanel = new FinanceManagerPanel(); // Gộp: Hóa đơn, Thanh toán, Khuyến mãi
+
         // Đặt tên chuỗi cho từng Card để gọi
         contentPanel.add(dashboardPanel, "DashboardPanel");
         contentPanel.add(studentPanel, "StudentPanel");
         contentPanel.add(teacherPanel, "TeacherPanel");
-        contentPanel.add(staffPanel, "StaffPanel"); 
-        contentPanel.add(roomPanel, "RoomPanel"); 
-        contentPanel.add(schedulePanel, "SchedulePanel"); // LỊCH HỌC
-        contentPanel.add(timetablePanel, "TimetablePanel"); // XEM TKB
-        contentPanel.add(attendancePanel, "AttendancePanel"); // ĐIỂM DANH LỚP
+        contentPanel.add(staffPanel, "StaffPanel");
+        contentPanel.add(roomPanel, "RoomPanel");
+        contentPanel.add(schedulePanel, "SchedulePanel");
+        contentPanel.add(timetablePanel, "TimetablePanel");
+        contentPanel.add(attendancePanel, "AttendancePanel");
         contentPanel.add(coursePanel, "CoursePanel");
         contentPanel.add(classPanel, "ClassPanel");
         contentPanel.add(enrollmentPanel, "EnrollmentPanel");
         contentPanel.add(placementTestPanel, "PlacementTestPanel");
         contentPanel.add(certificatePanel, "CertificatePanel");
-        contentPanel.add(invoicePanel, "InvoicePanel");
-        contentPanel.add(paymentPanel, "PaymentPanel");
-        contentPanel.add(promotionPanel, "PromotionPanel");
+        contentPanel.add(financePanel, "FinancePanel");
 
         // --- Tạo các Nút Menu ---
         JButton btnDashboard = createMenuButton("Dashboard");
@@ -90,27 +86,23 @@ public class MainFrame extends JFrame {
         JButton btnEnrollment = createMenuButton("Quản Lý Ghi Danh");
         JButton btnPlacementTest = createMenuButton("Quản Lý Placement Test");
         JButton btnCertificate = createMenuButton("Quản Lý Chứng Chỉ");
-        JButton btnInvoice = createMenuButton("Quản Lý Hoá Đơn");
-        JButton btnPayment = createMenuButton("Quản Lý Thanh Toán");
-        JButton btnPromotion = createMenuButton("Quản Lý Khuyến Mãi");
+        JButton btnFinance = createMenuButton("Hóa đơn, Thanh toán & Khuyến mãi");
 
         // Add action cho các nút để chuyển Card
         btnDashboard.addActionListener(e -> cardLayout.show(contentPanel, "DashboardPanel"));
         btnStudent.addActionListener(e -> cardLayout.show(contentPanel, "StudentPanel"));
         btnTeacher.addActionListener(e -> cardLayout.show(contentPanel, "TeacherPanel"));
-        btnStaff.addActionListener(e -> cardLayout.show(contentPanel, "StaffPanel")); 
-        btnRoom.addActionListener(e -> cardLayout.show(contentPanel, "RoomPanel")); 
-        btnSchedule.addActionListener(e -> cardLayout.show(contentPanel, "SchedulePanel")); // LỊCH HỌC
-        btnTimetable.addActionListener(e -> cardLayout.show(contentPanel, "TimetablePanel")); // XEM TKB
-        btnAttendance.addActionListener(e -> cardLayout.show(contentPanel, "AttendancePanel")); // ĐIỂM DANH LỚP
+        btnStaff.addActionListener(e -> cardLayout.show(contentPanel, "StaffPanel"));
+        btnRoom.addActionListener(e -> cardLayout.show(contentPanel, "RoomPanel"));
+        btnSchedule.addActionListener(e -> cardLayout.show(contentPanel, "SchedulePanel"));
+        btnTimetable.addActionListener(e -> cardLayout.show(contentPanel, "TimetablePanel"));
+        btnAttendance.addActionListener(e -> cardLayout.show(contentPanel, "AttendancePanel"));
         btnCourse.addActionListener(e -> cardLayout.show(contentPanel, "CoursePanel"));
         btnClass.addActionListener(e -> cardLayout.show(contentPanel, "ClassPanel"));
         btnEnrollment.addActionListener(e -> cardLayout.show(contentPanel, "EnrollmentPanel"));
         btnPlacementTest.addActionListener(e -> cardLayout.show(contentPanel, "PlacementTestPanel"));
         btnCertificate.addActionListener(e -> cardLayout.show(contentPanel, "CertificatePanel"));
-        btnInvoice.addActionListener(e -> cardLayout.show(contentPanel, "InvoicePanel"));
-        btnPayment.addActionListener(e -> cardLayout.show(contentPanel, "PaymentPanel"));
-        btnPromotion.addActionListener(e -> cardLayout.show(contentPanel, "PromotionPanel"));
+        btnFinance.addActionListener(e -> cardLayout.show(contentPanel, "FinancePanel"));
 
         sidebarPanel.add(btnDashboard);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -138,11 +130,7 @@ public class MainFrame extends JFrame {
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnCertificate);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        sidebarPanel.add(btnInvoice);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        sidebarPanel.add(btnPayment);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        sidebarPanel.add(btnPromotion);
+        sidebarPanel.add(btnFinance);
 
         // --- LOGIC PHÂN QUYỀN HEADER ---
         // Nếu là GIÁO VIÊN (Teacher), ẩn các nút Không thuộc thẩm quyền
@@ -157,9 +145,7 @@ public class MainFrame extends JFrame {
             btnEnrollment.setVisible(false);
             btnPlacementTest.setVisible(false);
             btnCertificate.setVisible(false);
-            btnInvoice.setVisible(false);
-            btnPayment.setVisible(false);
-            btnPromotion.setVisible(false);
+            btnFinance.setVisible(false);
             // Teacher chỉ được xếp lịch và Xem TKB
             // Teacher chỉ được xếp lịch, Xem TKB và THỰC HIỆN ĐIỂM DANH
             // Nút btnAttendance KHÔNG BỊ setVisible(false) -> Giáo viên được quyền truy cập!

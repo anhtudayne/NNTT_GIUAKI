@@ -19,6 +19,7 @@ public class App {
         //     client_ttnn.hcmute.view.LoginFrame loginFrame = new client_ttnn.hcmute.view.LoginFrame();
         //     loginFrame.setVisible(true);
         // });
+
         client_ttnn.hcmute.view.MainFrame mainFrame = new client_ttnn.hcmute.view.MainFrame(null);
         mainFrame.setVisible(true);
     }

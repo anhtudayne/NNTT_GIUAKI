@@ -6,6 +6,7 @@ import client_ttnn.hcmute.model.Student;
 import client_ttnn.hcmute.service.EnrollmentApiService;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Collections;
@@ -15,333 +16,186 @@ public class EnrollmentManagerPanel extends JPanel {
     private final EnrollmentApiService apiService;
     private JTable enrollmentTable;
     private DefaultTableModel tableModel;
-
-    private JTextField txtStudentId;
-    private JTextField txtClassId;
-    private JTextField txtEnrollmentDate;
-    private JComboBox<String> cmbStatus;
-    private JComboBox<String> cmbResult;
     private JTextField txtSearchId;
-
+    private JButton btnEdit, btnDelete;
     private Long selectedEnrollmentId = null;
 
     public EnrollmentManagerPanel() {
         apiService = new EnrollmentApiService();
+        setLayout(new BorderLayout(10, 10));
+        setBackground(Color.WHITE);
+        setBorder(new EmptyBorder(12, 12, 12, 12));
         initComponents();
         loadEnrollments();
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout(10, 10));
-
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        searchPanel.add(new JLabel("Tìm theo Enrollment ID:"));
+        JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        toolbarPanel.setBackground(Color.WHITE);
+        toolbarPanel.add(new JLabel("Tìm theo Enrollment ID:"));
         txtSearchId = new JTextField(20);
-        searchPanel.add(txtSearchId);
-
-        JButton btnSearch = new JButton("Tìm");
+        toolbarPanel.add(txtSearchId);
+        JButton btnSearch = new JButton("Tìm kiếm");
         btnSearch.addActionListener(e -> searchEnrollmentById());
-        searchPanel.add(btnSearch);
-
+        toolbarPanel.add(btnSearch);
+        Dimension refButtonSize = btnSearch.getPreferredSize();
         JButton btnRefresh = new JButton("Làm mới");
         btnRefresh.addActionListener(e -> loadEnrollments());
-        searchPanel.add(btnRefresh);
+        toolbarPanel.add(btnRefresh);
+        add(toolbarPanel, BorderLayout.NORTH);
 
-        add(searchPanel, BorderLayout.NORTH);
-
-        String[] columns = {
-                "ID", "Student ID", "Student Name", "Class ID", "Class Name", "Enrollment Date", "Status", "Result"
-        };
+        String[] columns = {"ID", "Student ID", "Student Name", "Class ID", "Class Name", "Enrollment Date", "Status", "Result"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
-
         enrollmentTable = new JTable(tableModel);
-        enrollmentTable.setRowHeight(30);
-        enrollmentTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        enrollmentTable.setRowHeight(32);
+        enrollmentTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        enrollmentTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        enrollmentTable.getTableHeader().setBackground(new Color(245, 245, 245));
         enrollmentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        enrollmentTable.setShowGrid(true);
+        enrollmentTable.setGridColor(new Color(220, 220, 220));
         enrollmentTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && enrollmentTable.getSelectedRow() != -1) {
-                loadSelectedEnrollment();
-            }
+            if (!e.getValueIsAdjusting()) updateSelectionState();
         });
-
         JScrollPane scrollPane = new JScrollPane(enrollmentTable);
         scrollPane.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEmptyBorder(10, 0, 10, 10),
-                UIManager.getBorder("ScrollPane.border")));
+                BorderFactory.createLineBorder(new Color(200, 200, 200)),
+                BorderFactory.createEmptyBorder(0, 0, 0, 0)));
         add(scrollPane, BorderLayout.CENTER);
 
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBorder(BorderFactory.createTitledBorder("Thông tin ghi danh"));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        txtStudentId = new JTextField(20);
-        txtClassId = new JTextField(20);
-        txtEnrollmentDate = new JTextField(20);
-        cmbStatus = new JComboBox<>(new String[]{"Registered", "Studying", "Completed", "Cancelled"});
-        cmbResult = new JComboBox<>(new String[]{"Pending", "Pass", "Fail"});
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        formPanel.add(new JLabel("Student ID:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(txtStudentId, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        formPanel.add(new JLabel("Class ID:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(txtClassId, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        formPanel.add(new JLabel("Ngày ghi danh (yyyy-MM-dd):"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(txtEnrollmentDate, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        formPanel.add(new JLabel("Trạng thái:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(cmbStatus, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        formPanel.add(new JLabel("Kết quả:"), gbc);
-        gbc.gridx = 1;
-        formPanel.add(cmbResult, gbc);
-
-        JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
-
-        JButton btnAdd = new JButton("Thêm mới");
-        btnAdd.addActionListener(e -> createEnrollment());
-        JButton btnUpdate = new JButton("Cập nhật");
-        btnUpdate.addActionListener(e -> updateEnrollment());
-        JButton btnDelete = new JButton("Xóa");
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 16));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
+        bottomPanel.setMinimumSize(new Dimension(400, 50));
+        Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
+        JButton btnAdd = new JButton("Thêm");
+        btnAdd.setPreferredSize(btnSize);
+        btnAdd.setMinimumSize(btnSize);
+        btnAdd.addActionListener(e -> openAddDialog());
+        btnEdit = new JButton("Sửa");
+        btnEdit.setPreferredSize(btnSize);
+        btnEdit.setMinimumSize(btnSize);
+        btnEdit.setEnabled(false);
+        btnEdit.addActionListener(e -> openEditDialog());
+        btnDelete = new JButton("Xóa");
+        btnDelete.setPreferredSize(btnSize);
+        btnDelete.setMinimumSize(btnSize);
+        btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deleteEnrollment());
-        JButton btnClear = new JButton("Xóa trắng bảng form");
-        btnClear.addActionListener(e -> clearForm());
-
-        buttonPanel.add(btnAdd);
-        buttonPanel.add(btnUpdate);
-        buttonPanel.add(btnDelete);
-        buttonPanel.add(btnClear);
-
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        gbc.gridwidth = 2;
-        formPanel.add(buttonPanel, gbc);
-
-        add(formPanel, BorderLayout.EAST);
+        bottomPanel.add(btnAdd);
+        bottomPanel.add(btnEdit);
+        bottomPanel.add(btnDelete);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
+
+    private void updateSelectionState() {
+        int row = enrollmentTable.getSelectedRow();
+        if (row >= 0) {
+            Object idVal = tableModel.getValueAt(row, 0);
+            selectedEnrollmentId = idVal != null ? ((Number) idVal).longValue() : null;
+            btnEdit.setEnabled(true);
+            btnDelete.setEnabled(true);
+        } else {
+            selectedEnrollmentId = null;
+            btnEdit.setEnabled(false);
+            btnDelete.setEnabled(false);
+        }
+    }
+
+    private void openAddDialog() {
+        EnrollmentFormDialog dlg = new EnrollmentFormDialog(
+                (Window) SwingUtilities.getWindowAncestor(this), apiService, false, null, this::loadEnrollments);
+        dlg.setVisible(true);
+    }
+
+    private void openEditDialog() {
+        if (selectedEnrollmentId == null) return;
+        Enrollment e = getSelectedFromTable();
+        if (e == null) return;
+        EnrollmentFormDialog dlg = new EnrollmentFormDialog(
+                (Window) SwingUtilities.getWindowAncestor(this), apiService, true, e, this::loadEnrollments);
+        dlg.setVisible(true);
+    }
+
+    private Enrollment getSelectedFromTable() {
+        int row = enrollmentTable.getSelectedRow();
+        if (row < 0) return null;
+        Enrollment e = new Enrollment();
+        e.setEnrollmentId(selectedEnrollmentId);
+        Student s = new Student();
+        Object sid = tableModel.getValueAt(row, 1);
+        if (sid != null) s.setId(((Number) sid).longValue());
+        e.setStudent(s);
+        Classes c = new Classes();
+        Object cid = tableModel.getValueAt(row, 3);
+        if (cid != null) c.setClassId(((Number) cid).longValue());
+        e.setClassEntity(c);
+        e.setEnrollmentDate(str(tableModel.getValueAt(row, 5)));
+        e.setStatus(str(tableModel.getValueAt(row, 6)));
+        e.setResult(str(tableModel.getValueAt(row, 7)));
+        return e;
+    }
+
+    private static String str(Object o) { return o == null ? "" : o.toString(); }
 
     private void loadEnrollments() {
         try {
             updateTable(apiService.getAllEnrollments());
-            clearForm();
+            selectedEnrollmentId = null;
+            btnEdit.setEnabled(false);
+            btnDelete.setEnabled(false);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách ghi danh: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void searchEnrollmentById() {
         String idText = txtSearchId.getText().trim();
-        if (idText.isEmpty()) {
-            loadEnrollments();
-            return;
-        }
-
+        if (idText.isEmpty()) { loadEnrollments(); return; }
         try {
             Long id = Long.parseLong(idText);
             Enrollment enrollment = apiService.getEnrollmentById(id);
             updateTable(Collections.singletonList(enrollment));
+            selectedEnrollmentId = null;
+            btnEdit.setEnabled(false);
+            btnDelete.setEnabled(false);
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Enrollment ID phải là số.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy enrollment: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Không tìm thấy: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void updateTable(List<Enrollment> enrollments) {
+    private void updateTable(List<Enrollment> list) {
         tableModel.setRowCount(0);
-        for (Enrollment enrollment : enrollments) {
-            Student student = enrollment.getStudent();
-            Classes classEntity = enrollment.getClassEntity();
-
-            Object[] row = {
-                    enrollment.getEnrollmentId(),
-                    student != null ? student.getId() : null,
-                    student != null ? student.getFullName() : "",
-                    classEntity != null ? classEntity.getClassId() : null,
-                    classEntity != null ? classEntity.getClassName() : "",
-                    enrollment.getEnrollmentDate(),
-                    enrollment.getStatus(),
-                    enrollment.getResult()
-            };
-            tableModel.addRow(row);
-        }
-    }
-
-    private void loadSelectedEnrollment() {
-        int selectedRow = enrollmentTable.getSelectedRow();
-        if (selectedRow == -1) {
-            return;
-        }
-
-        Object idValue = tableModel.getValueAt(selectedRow, 0);
-        selectedEnrollmentId = parseLongValue(idValue);
-
-        txtStudentId.setText(valueToString(tableModel.getValueAt(selectedRow, 1)));
-        txtClassId.setText(valueToString(tableModel.getValueAt(selectedRow, 3)));
-        txtEnrollmentDate.setText(valueToString(tableModel.getValueAt(selectedRow, 5)));
-
-        Object statusValue = tableModel.getValueAt(selectedRow, 6);
-        cmbStatus.setSelectedItem(statusValue != null ? statusValue.toString() : "Registered");
-
-        Object resultValue = tableModel.getValueAt(selectedRow, 7);
-        cmbResult.setSelectedItem(resultValue != null ? resultValue.toString() : "Pending");
-    }
-
-    private void createEnrollment() {
-        if (!validateForm()) {
-            return;
-        }
-
-        try {
-            apiService.createEnrollment(getEnrollmentFromForm());
-            JOptionPane.showMessageDialog(this, "Thêm enrollment thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-            loadEnrollments();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi thêm enrollment: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void updateEnrollment() {
-        if (selectedEnrollmentId == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn enrollment cần cập nhật!",
-                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        if (!validateForm()) {
-            return;
-        }
-
-        try {
-            apiService.updateEnrollment(selectedEnrollmentId, getEnrollmentFromForm());
-            JOptionPane.showMessageDialog(this, "Cập nhật enrollment thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-            loadEnrollments();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi cập nhật enrollment: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
+        for (Enrollment e : list) {
+            Student s = e.getStudent();
+            Classes c = e.getClassEntity();
+            tableModel.addRow(new Object[]{
+                    e.getEnrollmentId(),
+                    s != null ? s.getId() : null,
+                    s != null ? s.getFullName() : "",
+                    c != null ? c.getClassId() : null,
+                    c != null ? c.getClassName() : "",
+                    e.getEnrollmentDate(),
+                    e.getStatus(),
+                    e.getResult()
+            });
         }
     }
 
     private void deleteEnrollment() {
-        if (selectedEnrollmentId == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn enrollment cần xóa!",
-                    "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int confirm = JOptionPane.showConfirmDialog(this,
-                "Bạn có chắc chắn muốn xóa enrollment này?",
-                "Xác nhận", JOptionPane.YES_NO_OPTION);
-
-        if (confirm == JOptionPane.YES_OPTION) {
-            try {
-                apiService.deleteEnrollment(selectedEnrollmentId);
-                JOptionPane.showMessageDialog(this, "Xóa enrollment thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-                loadEnrollments();
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Lỗi khi xóa enrollment: " + e.getMessage(),
-                        "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private Enrollment getEnrollmentFromForm() {
-        Enrollment enrollment = new Enrollment();
-
-        Student student = new Student();
-        student.setId(Long.parseLong(txtStudentId.getText().trim()));
-        enrollment.setStudent(student);
-
-        Classes classEntity = new Classes();
-        classEntity.setClassId(Long.parseLong(txtClassId.getText().trim()));
-        enrollment.setClassEntity(classEntity);
-
-        enrollment.setEnrollmentDate(txtEnrollmentDate.getText().trim());
-        enrollment.setStatus((String) cmbStatus.getSelectedItem());
-        enrollment.setResult((String) cmbResult.getSelectedItem());
-
-        return enrollment;
-    }
-
-    private boolean validateForm() {
-        if (txtStudentId.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập Student ID!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-
-        if (txtClassId.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập Class ID!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-
-        if (txtEnrollmentDate.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng nhập ngày ghi danh!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-
+        if (selectedEnrollmentId == null) return;
+        if (JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa ghi danh này?", "Xác nhận", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) return;
         try {
-            Long.parseLong(txtStudentId.getText().trim());
-            Long.parseLong(txtClassId.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Student ID và Class ID phải là số.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
-            return false;
+            apiService.deleteEnrollment(selectedEnrollmentId);
+            JOptionPane.showMessageDialog(this, "Đã xóa.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+            loadEnrollments();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
-
-        return true;
-    }
-
-    private void clearForm() {
-        selectedEnrollmentId = null;
-        txtStudentId.setText("");
-        txtClassId.setText("");
-        txtEnrollmentDate.setText("");
-        cmbStatus.setSelectedIndex(0);
-        cmbResult.setSelectedIndex(0);
-        enrollmentTable.clearSelection();
-    }
-
-    private Long parseLongValue(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Long) {
-            return (Long) value;
-        }
-        if (value instanceof Integer) {
-            return ((Integer) value).longValue();
-        }
-        try {
-            return Long.parseLong(value.toString());
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
-    private String valueToString(Object value) {
-        return value == null ? "" : value.toString();
     }
 }
