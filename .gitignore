@@ -1,6 +1,7 @@
 ### Java & Maven build
-target/
 *.class
+target/
+**/target/
 
 ### Logs
 *.log

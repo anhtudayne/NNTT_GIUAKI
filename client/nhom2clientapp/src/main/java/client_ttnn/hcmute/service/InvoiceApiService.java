@@ -1,6 +1,7 @@
 package client_ttnn.hcmute.service;
 
 import client_ttnn.hcmute.model.Invoice;
+import client_ttnn.hcmute.model.Payment;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -89,6 +90,34 @@ public class InvoiceApiService {
         if (response.statusCode() != 200 && response.statusCode() != 204) {
             throw new Exception("Failed to delete invoice: " + response.statusCode());
         }
+    }
+
+    /** Lọc hóa đơn theo trạng thái (Unpaid/Partial/Paid). */
+    public List<Invoice> getInvoicesByStatus(String status) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/status/" + status))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return gson.fromJson(response.body(), new TypeToken<List<Invoice>>() {}.getType());
+        }
+        throw new Exception("Failed to get invoices by status: " + response.statusCode());
+    }
+
+    /** Lấy danh sách thanh toán của một hóa đơn. */
+    public List<Payment> getPaymentsByInvoiceId(Long invoiceId) throws Exception {
+        if (invoiceId == null) return List.of();
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/" + invoiceId + "/payments"))
+                .GET()
+                .build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        if (response.statusCode() == 200) {
+            return gson.fromJson(response.body(), new TypeToken<List<Payment>>() {}.getType());
+        }
+        throw new Exception("Failed to get payments: " + response.statusCode());
     }
 }
 

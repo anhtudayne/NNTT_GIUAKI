@@ -6,6 +6,7 @@ public class Payment {
     private Long paymentId;
     private Student student;
     private Enrollment enrollment;
+    private Invoice invoice;  // Hóa đơn được thanh toán (gửi {"invoiceId": id} khi tạo/sửa)
     private BigDecimal amount;
     private String paymentDate;
     private String paymentMethod; // Cash, BankTransfer, Momo, Card
@@ -33,6 +34,14 @@ public class Payment {
 
     public void setEnrollment(Enrollment enrollment) {
         this.enrollment = enrollment;
+    }
+
+    public Invoice getInvoice() {
+        return invoice;
+    }
+
+    public void setInvoice(Invoice invoice) {
+        this.invoice = invoice;
     }
 
     public BigDecimal getAmount() {
