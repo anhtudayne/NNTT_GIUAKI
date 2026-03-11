@@ -46,6 +46,8 @@ public class PaymentFormDialog extends JDialog {
     private JComboBox<String> cmbMethod, cmbStatus;
     private List<Student> allStudents = new ArrayList<>();
     private List<Invoice> selectableInvoices = new ArrayList<>();
+    private boolean updatingInvoiceCombo = false;
+    private boolean updatingStudentCombo = false;
 
     public PaymentFormDialog(Window owner, PaymentApiService apiService,
                              boolean isEditMode, Payment initial, Runnable onSuccess) {
@@ -65,8 +67,8 @@ public class PaymentFormDialog extends JDialog {
         this.onSuccess = onSuccess;
         this.forInvoiceId = forInvoiceId;
         this.forStudentId = forStudentId;
-        setSize(820, 620);
-        setMinimumSize(new Dimension(560, 480));
+        setSize(900, 700);
+        setMinimumSize(new Dimension(640, 540));
         setLocationRelativeTo(owner);
         setResizable(true);
         initComponents();
@@ -135,9 +137,9 @@ public class PaymentFormDialog extends JDialog {
 
         int row = 0;
         if (!isEditMode) {
-            addRow(formPanel, gbc, gbcField, row++, "Hóa đơn (Partial/Unpaid):", cmbInvoice);
+            addRow(formPanel, gbc, gbcField, row++, "Hóa đơn (Partial/Unpaid):", withClearButton(cmbInvoice));
         }
-        addRow(formPanel, gbc, gbcField, row++, "Học viên:", cmbStudent);
+        addRow(formPanel, gbc, gbcField, row++, "Học viên:", withClearButton(cmbStudent));
         addRow(formPanel, gbc, gbcField, row++, "Enrollment ID (tùy chọn):", txtEnrollmentId);
         addRow(formPanel, gbc, gbcField, row++, "Số tiền:", txtAmount);
         addRow(formPanel, gbc, gbcField, row++, "Ngày thanh toán:", dcPaymentDate);
@@ -180,6 +182,26 @@ public class PaymentFormDialog extends JDialog {
         p.add(new JLabel(label), gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         p.add(field, gbcField);
+    }
+
+    private JComponent withClearButton(JComboBox<?> combo) {
+        JPanel wrapper = new JPanel(new BorderLayout(8, 0));
+        wrapper.setOpaque(false);
+        JButton btnClear = new JButton("Xoa");
+        btnClear.setMargin(new Insets(2, 8, 2, 8));
+        btnClear.setToolTipText("Xoa lua chon");
+        btnClear.addActionListener(e -> {
+            if (!combo.isEnabled()) return;
+            combo.setSelectedItem(null);
+            Object editorComp = combo.getEditor() != null ? combo.getEditor().getEditorComponent() : null;
+            if (editorComp instanceof JTextField editor) {
+                editor.setText("");
+            }
+            combo.hidePopup();
+        });
+        wrapper.add(combo, BorderLayout.CENTER);
+        wrapper.add(btnClear, BorderLayout.EAST);
+        return wrapper;
     }
 
     private void fillForm(Payment p) {
@@ -263,6 +285,7 @@ public class PaymentFormDialog extends JDialog {
     }
 
     private void refreshInvoiceCombo(List<Invoice> invoices) {
+        updatingInvoiceCombo = true;
         Invoice selected = (Invoice) cmbInvoice.getSelectedItem();
         DefaultComboBoxModel<Invoice> model = new DefaultComboBoxModel<>();
         model.addElement(null);
@@ -271,9 +294,11 @@ public class PaymentFormDialog extends JDialog {
         }
         cmbInvoice.setModel(model);
         if (selected != null) cmbInvoice.setSelectedItem(selected);
+        updatingInvoiceCombo = false;
     }
 
     private void refreshStudentCombo(List<Student> students) {
+        updatingStudentCombo = true;
         Student selected = (Student) cmbStudent.getSelectedItem();
         DefaultComboBoxModel<Student> model = new DefaultComboBoxModel<>();
         model.addElement(null);
@@ -282,6 +307,7 @@ public class PaymentFormDialog extends JDialog {
         }
         cmbStudent.setModel(model);
         if (selected != null) cmbStudent.setSelectedItem(selected);
+        updatingStudentCombo = false;
     }
 
     private void hookInvoiceFilter() {
@@ -293,22 +319,26 @@ public class PaymentFormDialog extends JDialog {
             @Override public void removeUpdate(DocumentEvent e) { filter(); }
             @Override public void changedUpdate(DocumentEvent e) { filter(); }
             private void filter() {
+                if (updatingInvoiceCombo) return;
+                if (!cmbInvoice.isEnabled()) return;
                 String q = editor.getText() != null ? editor.getText().trim().toLowerCase() : "";
-                if (q.isEmpty()) {
-                    refreshInvoiceCombo(selectableInvoices);
-                    cmbInvoice.hidePopup();
-                    return;
-                }
-                List<Invoice> filtered = new ArrayList<>();
-                for (Invoice inv : selectableInvoices) {
-                    String id = inv.getInvoiceId() != null ? String.valueOf(inv.getInvoiceId()) : "";
-                    String st = inv.getStatus() != null ? inv.getStatus().toLowerCase() : "";
-                    String name = (inv.getStudent() != null && inv.getStudent().getFullName() != null) ? inv.getStudent().getFullName().toLowerCase() : "";
-                    if (id.contains(q) || name.contains(q) || st.contains(q)) filtered.add(inv);
-                }
-                refreshInvoiceCombo(filtered);
-                cmbInvoice.setSelectedItem(editor.getText());
-                cmbInvoice.showPopup();
+                SwingUtilities.invokeLater(() -> {
+                    if (q.isEmpty()) {
+                        refreshInvoiceCombo(selectableInvoices);
+                        cmbInvoice.setSelectedItem(null);
+                        cmbInvoice.hidePopup();
+                        return;
+                    }
+                    List<Invoice> filtered = new ArrayList<>();
+                    for (Invoice inv : selectableInvoices) {
+                        String id = inv.getInvoiceId() != null ? String.valueOf(inv.getInvoiceId()) : "";
+                        String st = inv.getStatus() != null ? inv.getStatus().toLowerCase() : "";
+                        String name = (inv.getStudent() != null && inv.getStudent().getFullName() != null) ? inv.getStudent().getFullName().toLowerCase() : "";
+                        if (id.contains(q) || name.contains(q) || st.contains(q)) filtered.add(inv);
+                    }
+                    refreshInvoiceCombo(filtered);
+                    cmbInvoice.showPopup();
+                });
             }
         });
     }
@@ -321,22 +351,25 @@ public class PaymentFormDialog extends JDialog {
             @Override public void removeUpdate(DocumentEvent e) { filter(); }
             @Override public void changedUpdate(DocumentEvent e) { filter(); }
             private void filter() {
+                if (updatingStudentCombo) return;
                 if (!cmbStudent.isEnabled()) return;
                 String q = editor.getText() != null ? editor.getText().trim().toLowerCase() : "";
-                if (q.isEmpty()) {
-                    refreshStudentCombo(allStudents);
-                    cmbStudent.hidePopup();
-                    return;
-                }
-                List<Student> filtered = new ArrayList<>();
-                for (Student s : allStudents) {
-                    String id = s.getId() != null ? String.valueOf(s.getId()) : "";
-                    String name = s.getFullName() != null ? s.getFullName().toLowerCase() : "";
-                    if (id.contains(q) || name.contains(q)) filtered.add(s);
-                }
-                refreshStudentCombo(filtered);
-                cmbStudent.setSelectedItem(editor.getText());
-                cmbStudent.showPopup();
+                SwingUtilities.invokeLater(() -> {
+                    if (q.isEmpty()) {
+                        refreshStudentCombo(allStudents);
+                        cmbStudent.setSelectedItem(null);
+                        cmbStudent.hidePopup();
+                        return;
+                    }
+                    List<Student> filtered = new ArrayList<>();
+                    for (Student s : allStudents) {
+                        String id = s.getId() != null ? String.valueOf(s.getId()) : "";
+                        String name = s.getFullName() != null ? s.getFullName().toLowerCase() : "";
+                        if (id.contains(q) || name.contains(q)) filtered.add(s);
+                    }
+                    refreshStudentCombo(filtered);
+                    cmbStudent.showPopup();
+                });
             }
         });
     }

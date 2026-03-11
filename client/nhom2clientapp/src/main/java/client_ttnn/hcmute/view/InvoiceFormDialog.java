@@ -33,6 +33,7 @@ public class InvoiceFormDialog extends JDialog {
     private JComboBox<String> cmbStatus;
     private JComboBox<Promotion> cmbPromotion;
     private List<Student> allStudents = new ArrayList<>();
+    private boolean updatingStudentCombo = false;
 
     public InvoiceFormDialog(Window owner, InvoiceApiService apiService, PromotionApiService promotionService,
                              boolean isEditMode, Invoice initial, Runnable onSuccess) {
@@ -43,8 +44,8 @@ public class InvoiceFormDialog extends JDialog {
         this.isEditMode = isEditMode;
         this.initial = initial;
         this.onSuccess = onSuccess;
-        setSize(820, 660);
-        setMinimumSize(new Dimension(560, 520));
+        setSize(900, 720);
+        setMinimumSize(new Dimension(640, 560));
         setLocationRelativeTo(owner);
         setResizable(true);
         initComponents();
@@ -96,7 +97,7 @@ public class InvoiceFormDialog extends JDialog {
         cmbPromotion.setPreferredSize(new Dimension(new JTextField(cols).getPreferredSize().width, cmbPromotion.getPreferredSize().height));
 
         int row = 0;
-        addRow(formPanel, gbc, gbcField, row++, "Học viên:", cmbStudent);
+        addRow(formPanel, gbc, gbcField, row++, "Học viên:", withClearButton(cmbStudent));
         addRow(formPanel, gbc, gbcField, row++, "Tổng tiền (ban đầu):", txtTotalAmount);
         gbc.gridx = 0; gbc.gridy = row;
         formPanel.add(new JLabel("Khuyến mãi:"), gbc);
@@ -148,6 +149,25 @@ public class InvoiceFormDialog extends JDialog {
         p.add(field, gbcField);
     }
 
+    private JComponent withClearButton(JComboBox<?> combo) {
+        JPanel wrapper = new JPanel(new BorderLayout(8, 0));
+        wrapper.setOpaque(false);
+        JButton btnClear = new JButton("Xoa");
+        btnClear.setMargin(new Insets(2, 8, 2, 8));
+        btnClear.setToolTipText("Xoa lua chon");
+        btnClear.addActionListener(e -> {
+            combo.setSelectedItem(null);
+            Object editorComp = combo.getEditor() != null ? combo.getEditor().getEditorComponent() : null;
+            if (editorComp instanceof JTextField editor) {
+                editor.setText("");
+            }
+            combo.hidePopup();
+        });
+        wrapper.add(combo, BorderLayout.CENTER);
+        wrapper.add(btnClear, BorderLayout.EAST);
+        return wrapper;
+    }
+
     private void loadPromotions() {
         try {
             cmbPromotion.removeAllItems();
@@ -170,6 +190,7 @@ public class InvoiceFormDialog extends JDialog {
     }
 
     private void refreshStudentCombo(List<Student> students) {
+        updatingStudentCombo = true;
         Student selected = (Student) cmbStudent.getSelectedItem();
         DefaultComboBoxModel<Student> model = new DefaultComboBoxModel<>();
         model.addElement(null);
@@ -178,6 +199,7 @@ public class InvoiceFormDialog extends JDialog {
         }
         cmbStudent.setModel(model);
         if (selected != null) cmbStudent.setSelectedItem(selected);
+        updatingStudentCombo = false;
     }
 
     private void hookStudentFilter() {
@@ -188,21 +210,24 @@ public class InvoiceFormDialog extends JDialog {
             @Override public void removeUpdate(DocumentEvent e) { filter(); }
             @Override public void changedUpdate(DocumentEvent e) { filter(); }
             private void filter() {
+                if (updatingStudentCombo) return;
                 String q = editor.getText() != null ? editor.getText().trim().toLowerCase() : "";
-                if (q.isEmpty()) {
-                    refreshStudentCombo(allStudents);
-                    cmbStudent.hidePopup();
-                    return;
-                }
-                List<Student> filtered = new ArrayList<>();
-                for (Student s : allStudents) {
-                    String id = s.getId() != null ? String.valueOf(s.getId()) : "";
-                    String name = s.getFullName() != null ? s.getFullName().toLowerCase() : "";
-                    if (id.contains(q) || name.contains(q)) filtered.add(s);
-                }
-                refreshStudentCombo(filtered);
-                cmbStudent.setSelectedItem(editor.getText());
-                cmbStudent.showPopup();
+                SwingUtilities.invokeLater(() -> {
+                    if (q.isEmpty()) {
+                        refreshStudentCombo(allStudents);
+                        cmbStudent.setSelectedItem(null);
+                        cmbStudent.hidePopup();
+                        return;
+                    }
+                    List<Student> filtered = new ArrayList<>();
+                    for (Student s : allStudents) {
+                        String id = s.getId() != null ? String.valueOf(s.getId()) : "";
+                        String name = s.getFullName() != null ? s.getFullName().toLowerCase() : "";
+                        if (id.contains(q) || name.contains(q)) filtered.add(s);
+                    }
+                    refreshStudentCombo(filtered);
+                    cmbStudent.showPopup();
+                });
             }
         });
     }
