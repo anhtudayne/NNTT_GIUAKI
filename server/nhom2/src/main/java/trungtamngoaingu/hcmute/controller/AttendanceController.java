@@ -68,4 +68,11 @@ public class AttendanceController {
         List<Attendance> saved = attendanceService.saveBatchAttendances(attendances);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
+
+    // Lấy danh sách điểm danh cũ của 1 lớp trong 1 ngày
+    @GetMapping("/class/{classId}/date/{date}")
+    public ResponseEntity<List<Attendance>> getAttendancesByClassIdAndDate(@PathVariable Integer classId, @PathVariable String date) {
+        List<Attendance> attendances = attendanceService.getAttendancesByClassIdAndDate(classId, date);
+        return ResponseEntity.ok(attendances);
+    }
 }

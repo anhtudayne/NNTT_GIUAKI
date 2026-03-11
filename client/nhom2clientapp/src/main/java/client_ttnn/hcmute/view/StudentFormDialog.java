@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 /**
  * Cửa sổ dialog dùng cho Thêm mới / Cập nhật học viên.
@@ -111,19 +112,11 @@ public class StudentFormDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         buttonPanel.setBackground(new Color(245, 247, 250));
 
-        JButton btnSave = new JButton("Lưu");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
         btnSave.setPreferredSize(new Dimension(100, 35));
-        btnSave.setBackground(new Color(46, 204, 113));
-        btnSave.setForeground(Color.WHITE);
-        btnSave.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        btnSave.setFocusPainted(false);
         
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnCancel.setPreferredSize(new Dimension(100, 35));
-        btnCancel.setBackground(new Color(231, 76, 60));
-        btnCancel.setForeground(Color.WHITE);
-        btnCancel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        btnCancel.setFocusPainted(false);
 
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());
@@ -271,32 +264,14 @@ public class StudentFormDialog extends JDialog {
             new EmptyBorder(10, 10, 10, 10)
         ));
 
-        btnAddEnrollment = new JButton("➕ Đăng ký lớp mới");
-        btnAddEnrollment.setBackground(new Color(46, 204, 113));
-        btnAddEnrollment.setForeground(Color.WHITE);
-        btnAddEnrollment.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnAddEnrollment.setFocusPainted(false);
-        btnAddEnrollment.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnAddEnrollment.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnAddEnrollment = client_ttnn.hcmute.util.ButtonStyles.createPrimaryButton("➕ Đăng ký lớp mới");
         btnAddEnrollment.addActionListener(e -> addEnrollment());
 
-        btnRemoveEnrollment = new JButton("🗑️ Hủy đăng ký");
-        btnRemoveEnrollment.setBackground(new Color(231, 76, 60));
-        btnRemoveEnrollment.setForeground(Color.WHITE);
-        btnRemoveEnrollment.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnRemoveEnrollment.setFocusPainted(false);
-        btnRemoveEnrollment.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnRemoveEnrollment.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnRemoveEnrollment = client_ttnn.hcmute.util.ButtonStyles.createDangerButton("🗑️ Hủy đăng ký");
         btnRemoveEnrollment.setEnabled(false);
         btnRemoveEnrollment.addActionListener(e -> removeEnrollment());
 
-        JButton btnRefresh = new JButton("⟳ Làm mới");
-        btnRefresh.setBackground(new Color(149, 165, 166));
-        btnRefresh.setForeground(Color.WHITE);
-        btnRefresh.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnRefresh.setFocusPainted(false);
-        btnRefresh.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnRefresh = client_ttnn.hcmute.util.ButtonStyles.createNeutralButton("⟳ Làm mới");
         btnRefresh.addActionListener(e -> loadEnrollments());
 
         toolbarPanel.add(btnAddEnrollment);

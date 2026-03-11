@@ -2,11 +2,15 @@ package client_ttnn.hcmute.view;
 
 import client_ttnn.hcmute.model.Promotion;
 import client_ttnn.hcmute.service.PromotionApiService;
+import com.toedter.calendar.JDateChooser;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.math.BigDecimal;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class PromotionFormDialog extends JDialog {
 
@@ -17,8 +21,8 @@ public class PromotionFormDialog extends JDialog {
 
     private JTextField txtPromoCode;
     private JTextField txtDiscountPercent;
-    private JTextField txtStartDate;
-    private JTextField txtEndDate;
+    private JDateChooser dcStartDate;
+    private JDateChooser dcEndDate;
     private JTextArea txtDescription;
 
     public PromotionFormDialog(Window owner, PromotionApiService apiService,
@@ -29,8 +33,8 @@ public class PromotionFormDialog extends JDialog {
         this.initialPromotion = initialPromotion;
         this.onSuccess = onSuccess;
 
-        setSize(820, 680);
-        setMinimumSize(new Dimension(560, 520));
+        setSize(900, 720);
+        setMinimumSize(new Dimension(640, 560));
         setLocationRelativeTo(owner);
         setResizable(true);
         initComponents();
@@ -60,13 +64,15 @@ public class PromotionFormDialog extends JDialog {
         int fieldCols = 42;
         txtPromoCode = new JTextField(fieldCols);
         txtDiscountPercent = new JTextField(fieldCols);
-        txtStartDate = new JTextField(fieldCols);
-        txtStartDate.setToolTipText("yyyy-MM-dd");
-        txtEndDate = new JTextField(fieldCols);
-        txtEndDate.setToolTipText("yyyy-MM-dd");
-        txtDescription = new JTextArea(4, fieldCols);
+        dcStartDate = new JDateChooser();
+        dcStartDate.setDateFormatString("yyyy-MM-dd");
+        dcEndDate = new JDateChooser();
+        dcEndDate.setDateFormatString("yyyy-MM-dd");
+        txtDescription = new JTextArea(9, fieldCols);
         txtDescription.setLineWrap(true);
         txtDescription.setWrapStyleWord(true);
+        JScrollPane descriptionScroll = new JScrollPane(txtDescription);
+        descriptionScroll.setPreferredSize(new Dimension(520, 190));
 
         int row = 0;
         gbc.gridx = 0; gbc.gridy = row;
@@ -80,19 +86,23 @@ public class PromotionFormDialog extends JDialog {
         formPanel.add(txtDiscountPercent, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Ngày bắt đầu (yyyy-MM-dd):"), gbc);
+        formPanel.add(new JLabel("Ngày bắt đầu:"), gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
-        formPanel.add(txtStartDate, gbcField);
+        formPanel.add(dcStartDate, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Ngày kết thúc (yyyy-MM-dd):"), gbc);
+        formPanel.add(new JLabel("Ngày kết thúc:"), gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
-        formPanel.add(txtEndDate, gbcField);
+        formPanel.add(dcEndDate, gbcField);
         row++;
         gbc.gridx = 0; gbc.gridy = row;
         formPanel.add(new JLabel("Mô tả:"), gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
-        formPanel.add(new JScrollPane(txtDescription), gbcField);
+        gbcField.fill = GridBagConstraints.BOTH;
+        gbcField.weighty = 1.0;
+        formPanel.add(descriptionScroll, gbcField);
+        gbcField.fill = GridBagConstraints.HORIZONTAL;
+        gbcField.weighty = 0;
 
         content.add(formPanel, BorderLayout.CENTER);
 
@@ -100,10 +110,10 @@ public class PromotionFormDialog extends JDialog {
         buttonPanel.setBackground(Color.WHITE);
         Dimension refBtnSize = new JButton("Tìm kiếm").getPreferredSize();
 
-        JButton btnSave = new JButton("Lưu");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
         btnSave.setPreferredSize(refBtnSize);
         btnSave.setMinimumSize(refBtnSize);
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnCancel.setPreferredSize(refBtnSize);
         btnCancel.setMinimumSize(refBtnSize);
 
@@ -123,8 +133,8 @@ public class PromotionFormDialog extends JDialog {
         if (p == null) return;
         txtPromoCode.setText(p.getPromoCode() != null ? p.getPromoCode() : "");
         txtDiscountPercent.setText(p.getDiscountPercent() != null ? p.getDiscountPercent().toPlainString() : "");
-        txtStartDate.setText(p.getStartDate() != null ? p.getStartDate() : "");
-        txtEndDate.setText(p.getEndDate() != null ? p.getEndDate() : "");
+        dcStartDate.setDate(parseDate(p.getStartDate()));
+        dcEndDate.setDate(parseDate(p.getEndDate()));
         txtDescription.setText(p.getDescription() != null ? p.getDescription() : "");
     }
 
@@ -132,8 +142,8 @@ public class PromotionFormDialog extends JDialog {
         Promotion p = new Promotion();
         p.setPromoCode(txtPromoCode.getText().trim());
         p.setDiscountPercent(new BigDecimal(txtDiscountPercent.getText().trim()));
-        p.setStartDate(txtStartDate.getText().trim());
-        p.setEndDate(txtEndDate.getText().trim());
+        p.setStartDate(formatDate(dcStartDate.getDate()));
+        p.setEndDate(formatDate(dcEndDate.getDate()));
         p.setDescription(txtDescription.getText().trim());
         return p;
     }
@@ -147,6 +157,14 @@ public class PromotionFormDialog extends JDialog {
             new BigDecimal(txtDiscountPercent.getText().trim());
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(this, "Phần trăm giảm giá phải là số hợp lệ.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (dcStartDate.getDate() == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày bắt đầu.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (dcEndDate.getDate() == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày kết thúc.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return false;
         }
         return true;
@@ -167,6 +185,22 @@ public class PromotionFormDialog extends JDialog {
             dispose();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private static String str(Object o) { return o == null ? "" : o.toString(); }
+
+    private static String formatDate(Date d) {
+        if (d == null) return "";
+        return new SimpleDateFormat("yyyy-MM-dd").format(d);
+    }
+
+    private static Date parseDate(String s) {
+        if (s == null || s.isBlank()) return null;
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse(s);
+        } catch (Exception e) {
+            return null;
         }
     }
 }

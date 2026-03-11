@@ -25,6 +25,11 @@ public class Payment {
     @JoinColumn(name = "EnrollmentID", foreignKey = @ForeignKey(name = "FK_Payment_Enrollment"))
     private Enrollment enrollment;
 
+    /** Hóa đơn được thanh toán (nullable: thanh toán có thể chưa gắn hóa đơn). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "InvoiceID", foreignKey = @ForeignKey(name = "FK_Payment_Invoice"))
+    private Invoice invoice;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 

@@ -5,6 +5,8 @@ import client_ttnn.hcmute.model.Promotion;
 import client_ttnn.hcmute.model.Student;
 import client_ttnn.hcmute.service.InvoiceApiService;
 import client_ttnn.hcmute.service.PromotionApiService;
+import client_ttnn.hcmute.service.StudentApiService;
+import com.toedter.calendar.JDateChooser;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -12,32 +14,43 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class InvoiceFormDialog extends JDialog {
     private final InvoiceApiService apiService;
     private final PromotionApiService promotionService;
+    private final StudentApiService studentService;
     private final boolean isEditMode;
     private final Invoice initial;
     private final Runnable onSuccess;
 
-    private JTextField txtStudentId, txtTotalAmount, txtAmountAfterDiscount, txtIssueDate;
+    private JComboBox<Student> cmbStudent;
+    private JTextField txtTotalAmount, txtAmountAfterDiscount;
+    private JDateChooser dcIssueDate;
     private JComboBox<String> cmbStatus;
     private JComboBox<Promotion> cmbPromotion;
+    private List<Student> allStudents = new ArrayList<>();
+    private boolean updatingStudentCombo = false;
 
     public InvoiceFormDialog(Window owner, InvoiceApiService apiService, PromotionApiService promotionService,
                              boolean isEditMode, Invoice initial, Runnable onSuccess) {
         super(owner, isEditMode ? "Cập nhật hóa đơn" : "Thêm hóa đơn mới", ModalityType.APPLICATION_MODAL);
         this.apiService = apiService;
         this.promotionService = promotionService;
+        this.studentService = new StudentApiService();
         this.isEditMode = isEditMode;
         this.initial = initial;
         this.onSuccess = onSuccess;
-        setSize(820, 660);
-        setMinimumSize(new Dimension(560, 520));
+        setSize(900, 720);
+        setMinimumSize(new Dimension(640, 560));
         setLocationRelativeTo(owner);
         setResizable(true);
         initComponents();
+        loadStudents();
         loadPromotions();
         if (initial != null) fillForm(initial);
         recalcDiscountedAmount();
@@ -61,26 +74,39 @@ public class InvoiceFormDialog extends JDialog {
         gbcField.weightx = 1.0;
 
         int cols = 42;
-        txtStudentId = new JTextField(cols);
+        cmbStudent = new JComboBox<>();
+        cmbStudent.setEditable(true);
+        cmbStudent.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Student s) {
+                    String id = s.getId() != null ? String.valueOf(s.getId()) : "--";
+                    String name = s.getFullName() != null ? s.getFullName() : "";
+                    setText(id + " - " + name);
+                }
+                return this;
+            }
+        });
         txtTotalAmount = new JTextField(cols);
         txtAmountAfterDiscount = new JTextField(cols);
         txtAmountAfterDiscount.setEditable(false);
-        txtIssueDate = new JTextField(cols);
-        txtIssueDate.setToolTipText("yyyy-MM-dd");
+        dcIssueDate = new JDateChooser();
+        dcIssueDate.setDateFormatString("yyyy-MM-dd");
         cmbStatus = new JComboBox<>(new String[]{"Unpaid", "Partial", "Paid"});
         cmbPromotion = new JComboBox<>();
         cmbPromotion.setPreferredSize(new Dimension(new JTextField(cols).getPreferredSize().width, cmbPromotion.getPreferredSize().height));
 
         int row = 0;
-        addRow(formPanel, gbc, gbcField, row++, "Student ID:", txtStudentId);
-        addRow(formPanel, gbc, gbcField, row++, "Tổng tiền (trước KM):", txtTotalAmount);
+        addRow(formPanel, gbc, gbcField, row++, "Học viên:", withClearButton(cmbStudent));
+        addRow(formPanel, gbc, gbcField, row++, "Tổng tiền (ban đầu):", txtTotalAmount);
         gbc.gridx = 0; gbc.gridy = row;
         formPanel.add(new JLabel("Khuyến mãi:"), gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(cmbPromotion, gbcField);
         row++;
-        addRow(formPanel, gbc, gbcField, row++, "Sau khuyến mãi:", txtAmountAfterDiscount);
-        addRow(formPanel, gbc, gbcField, row++, "Ngày xuất (yyyy-MM-dd):", txtIssueDate);
+        addRow(formPanel, gbc, gbcField, row++, "Còn phải thu (sau KM):", txtAmountAfterDiscount);
+        addRow(formPanel, gbc, gbcField, row++, "Ngày xuất:", dcIssueDate);
         gbc.gridx = 0; gbc.gridy = row;
         formPanel.add(new JLabel("Trạng thái:"), gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
@@ -95,16 +121,17 @@ public class InvoiceFormDialog extends JDialog {
             public void changedUpdate(DocumentEvent e) { recalcDiscountedAmount(); }
         });
         cmbPromotion.addActionListener(e -> recalcDiscountedAmount());
+        hookStudentFilter();
 
         content.add(formPanel, BorderLayout.CENTER);
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         btnPanel.setBackground(Color.WHITE);
         Dimension refBtn = new JButton("Tìm kiếm").getPreferredSize();
-        JButton btnSave = new JButton("Lưu");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
         btnSave.setPreferredSize(refBtn);
         btnSave.setMinimumSize(refBtn);
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnCancel.setPreferredSize(refBtn);
         btnCancel.setMinimumSize(refBtn);
         btnSave.addActionListener(e -> save());
@@ -123,6 +150,25 @@ public class InvoiceFormDialog extends JDialog {
         p.add(field, gbcField);
     }
 
+    private JComponent withClearButton(JComboBox<?> combo) {
+        JPanel wrapper = new JPanel(new BorderLayout(8, 0));
+        wrapper.setOpaque(false);
+        JButton btnClear = ButtonStyles.createNeutralButton("Xoa");
+        btnClear.setMargin(new Insets(4, 10, 4, 10));
+        btnClear.setToolTipText("Xoa lua chon");
+        btnClear.addActionListener(e -> {
+            combo.setSelectedItem(null);
+            Object editorComp = combo.getEditor() != null ? combo.getEditor().getEditorComponent() : null;
+            if (editorComp instanceof JTextField editor) {
+                editor.setText("");
+            }
+            combo.hidePopup();
+        });
+        wrapper.add(combo, BorderLayout.CENTER);
+        wrapper.add(btnClear, BorderLayout.EAST);
+        return wrapper;
+    }
+
     private void loadPromotions() {
         try {
             cmbPromotion.removeAllItems();
@@ -133,6 +179,58 @@ public class InvoiceFormDialog extends JDialog {
         } catch (Exception e) {
             // ignore
         }
+    }
+
+    private void loadStudents() {
+        try {
+            allStudents = studentService.getAllStudents();
+            refreshStudentCombo(allStudents);
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    private void refreshStudentCombo(List<Student> students) {
+        updatingStudentCombo = true;
+        Student selected = (Student) cmbStudent.getSelectedItem();
+        DefaultComboBoxModel<Student> model = new DefaultComboBoxModel<>();
+        model.addElement(null);
+        if (students != null) {
+            for (Student s : students) model.addElement(s);
+        }
+        cmbStudent.setModel(model);
+        if (selected != null) cmbStudent.setSelectedItem(selected);
+        updatingStudentCombo = false;
+    }
+
+    private void hookStudentFilter() {
+        Component editorComp = cmbStudent.getEditor().getEditorComponent();
+        if (!(editorComp instanceof JTextField editor)) return;
+        editor.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { filter(); }
+            @Override public void removeUpdate(DocumentEvent e) { filter(); }
+            @Override public void changedUpdate(DocumentEvent e) { filter(); }
+            private void filter() {
+                if (updatingStudentCombo) return;
+                String q = editor.getText() != null ? editor.getText().trim().toLowerCase() : "";
+                SwingUtilities.invokeLater(() -> {
+                    if (q.isEmpty()) {
+                        refreshStudentCombo(allStudents);
+                        cmbStudent.setSelectedItem(null);
+                        cmbStudent.hidePopup();
+                        return;
+                    }
+                    List<Student> filtered = new ArrayList<>();
+                    for (Student s : allStudents) {
+                        String id = s.getId() != null ? String.valueOf(s.getId()) : "";
+                        String name = s.getFullName() != null ? s.getFullName().toLowerCase() : "";
+                        if (id.contains(q) || name.contains(q)) filtered.add(s);
+                    }
+                    refreshStudentCombo(filtered);
+                    cmbStudent.showPopup();
+                });
+            }
+        });
     }
 
     private void recalcDiscountedAmount() {
@@ -158,32 +256,35 @@ public class InvoiceFormDialog extends JDialog {
 
     private void fillForm(Invoice inv) {
         if (inv == null) return;
-        if (inv.getStudent() != null && inv.getStudent().getId() != null) txtStudentId.setText(String.valueOf(inv.getStudent().getId()));
+        if (inv.getStudent() != null) cmbStudent.setSelectedItem(inv.getStudent());
         if (inv.getTotalAmount() != null) txtTotalAmount.setText(inv.getTotalAmount().toPlainString());
-        txtIssueDate.setText(str(inv.getIssueDate()));
+        dcIssueDate.setDate(parseDate(inv.getIssueDate()));
         if (inv.getStatus() != null) cmbStatus.setSelectedItem(inv.getStatus());
         recalcDiscountedAmount();
     }
 
     private Invoice getFromForm() {
         Invoice inv = new Invoice();
-        Student s = new Student();
-        s.setId(Long.parseLong(txtStudentId.getText().trim()));
-        inv.setStudent(s);
+        Student selected = (Student) cmbStudent.getSelectedItem();
+        if (selected != null && selected.getId() != null) {
+            Student s = new Student();
+            s.setId(selected.getId());
+            inv.setStudent(s);
+        }
         // Lưu số tiền sau khuyến mãi (đã hiển thị ở ô "Sau khuyến mãi")
         String amountText = txtAmountAfterDiscount.getText().trim().replace(",", "");
         if (amountText.isEmpty()) amountText = txtTotalAmount.getText().trim().replace(",", "");
         inv.setTotalAmount(new BigDecimal(amountText));
-        inv.setIssueDate(txtIssueDate.getText().trim());
+        inv.setIssueDate(formatDate(dcIssueDate.getDate()));
         inv.setStatus((String) cmbStatus.getSelectedItem());
         return inv;
     }
 
     private boolean validateForm() {
-        if (txtStudentId.getText().trim().isEmpty()) { JOptionPane.showMessageDialog(this, "Vui lòng nhập Student ID.", "Cảnh báo", JOptionPane.WARNING_MESSAGE); return false; }
+        Student selected = (Student) cmbStudent.getSelectedItem();
+        if (selected == null || selected.getId() == null) { JOptionPane.showMessageDialog(this, "Vui lòng chọn học viên.", "Cảnh báo", JOptionPane.WARNING_MESSAGE); return false; }
         if (txtTotalAmount.getText().trim().isEmpty()) { JOptionPane.showMessageDialog(this, "Vui lòng nhập Tổng tiền.", "Cảnh báo", JOptionPane.WARNING_MESSAGE); return false; }
-        if (txtIssueDate.getText().trim().isEmpty()) { JOptionPane.showMessageDialog(this, "Vui lòng nhập ngày xuất.", "Cảnh báo", JOptionPane.WARNING_MESSAGE); return false; }
-        try { Long.parseLong(txtStudentId.getText().trim()); } catch (NumberFormatException ex) { JOptionPane.showMessageDialog(this, "Student ID phải là số.", "Cảnh báo", JOptionPane.WARNING_MESSAGE); return false; }
+        if (dcIssueDate.getDate() == null) { JOptionPane.showMessageDialog(this, "Vui lòng chọn ngày xuất.", "Cảnh báo", JOptionPane.WARNING_MESSAGE); return false; }
         try { new BigDecimal(txtTotalAmount.getText().trim().replace(",", "")); } catch (Exception ex) { JOptionPane.showMessageDialog(this, "Tổng tiền không hợp lệ.", "Cảnh báo", JOptionPane.WARNING_MESSAGE); return false; }
         return true;
     }
@@ -207,4 +308,18 @@ public class InvoiceFormDialog extends JDialog {
     }
 
     private static String str(Object o) { return o == null ? "" : o.toString(); }
+
+    private static String formatDate(Date d) {
+        if (d == null) return "";
+        return new SimpleDateFormat("yyyy-MM-dd").format(d);
+    }
+
+    private static Date parseDate(String s) {
+        if (s == null || s.isBlank()) return null;
+        try {
+            return new SimpleDateFormat("yyyy-MM-dd").parse(s);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

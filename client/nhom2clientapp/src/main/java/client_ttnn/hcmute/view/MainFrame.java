@@ -25,8 +25,10 @@ public class MainFrame extends JFrame {
     private static final Color TIMETABLE_BTN_COLOR = new Color(52, 73, 94);
     private static final Color ATTENDANCE_BTN_COLOR = new Color(230, 126, 34);
     private static final Color ENROLLMENT_BTN_COLOR = new Color(39, 174, 96);
+
     private static final Color COURSE_BTN_COLOR = new Color(155, 89, 182);
     private static final Color CLASS_BTN_COLOR = new Color(142, 68, 173);
+    private static final Color EDUCATION_BTN_COLOR = new Color(142, 68, 173);
     private static final Color PLACEMENT_TEST_BTN_COLOR = new Color(127, 140, 141);
     private static final Color CERTIFICATE_BTN_COLOR = new Color(243, 156, 18);
     
@@ -86,9 +88,8 @@ public class MainFrame extends JFrame {
         RoomManagerPanel roomPanel = new RoomManagerPanel(); // PHÒNG HỌC
         ScheduleManagerPanel schedulePanel = new ScheduleManagerPanel(); // LỊCH HỌC
         TimetableViewPanel timetablePanel = new TimetableViewPanel(); // XEM TKB
-        AttendanceManagerPanel attendancePanel = new AttendanceManagerPanel(); // ĐIỂM DANH LỚP
-        CourseManagerPanel coursePanel = new CourseManagerPanel();
-        ClassManagerPanel classPanel = new ClassManagerPanel();
+        AttendanceManagerPanel attendancePanel = new AttendanceManagerPanel(this.currentUser); // ĐIỂM DANH LỚP
+        EducationManagerPanel educationPanel = new EducationManagerPanel(); // Gộp: Lớp học, Khóa học
         EnrollmentManagerPanel enrollmentPanel = new EnrollmentManagerPanel();
         PlacementTestManagerPanel placementTestPanel = new PlacementTestManagerPanel();
         CertificateManagerPanel certificatePanel = new CertificateManagerPanel();
@@ -103,8 +104,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(schedulePanel, "SchedulePanel");
         contentPanel.add(timetablePanel, "TimetablePanel");
         contentPanel.add(attendancePanel, "AttendancePanel");
-        contentPanel.add(coursePanel, "CoursePanel");
-        contentPanel.add(classPanel, "ClassPanel");
+        contentPanel.add(educationPanel, "EducationPanel");
         contentPanel.add(enrollmentPanel, "EnrollmentPanel");
         contentPanel.add(placementTestPanel, "PlacementTestPanel");
         contentPanel.add(certificatePanel, "CertificatePanel");
@@ -122,8 +122,7 @@ public class MainFrame extends JFrame {
         JButton btnSchedule = createMenuButton("Xếp Lịch Học"); // LỊCH HỌC
         JButton btnTimetable = createMenuButton("Xem Thời Khoá Biểu"); // XEM TKB
         JButton btnAttendance = createMenuButton("Điểm Danh Lớp"); // ĐIỂM DANH LỚP
-        JButton btnCourse = createMenuButton("Quản Lý Khóa Học");
-        JButton btnClass = createMenuButton("Quản Lý Lớp Học");
+        JButton btnEducation = createMenuButton("Khóa học & Lớp học"); // ĐÀO TẠO
         JButton btnEnrollment = createMenuButton("Quản Lý Ghi Danh");
         JButton btnToggleOther = createMenuButton("Khác ▸");
         JButton btnPlacementTest = createMenuButton("Quản Lý Placement Test");
@@ -141,8 +140,7 @@ public class MainFrame extends JFrame {
         btnTimetable.setBackground(TIMETABLE_BTN_COLOR);
         btnAttendance.setBackground(ATTENDANCE_BTN_COLOR);
         btnEnrollment.setBackground(ENROLLMENT_BTN_COLOR);
-        btnCourse.setBackground(COURSE_BTN_COLOR);
-        btnClass.setBackground(CLASS_BTN_COLOR);
+        btnEducation.setBackground(EDUCATION_BTN_COLOR);
         btnPlacementTest.setBackground(PLACEMENT_TEST_BTN_COLOR);
         btnCertificate.setBackground(CERTIFICATE_BTN_COLOR);
         
@@ -159,7 +157,7 @@ public class MainFrame extends JFrame {
         JButton[] resourceTabButtons = {btnStudent, btnTeacher, btnStaff, btnRoom};
         JButton[] navigationButtons = {
             btnDashboard, btnStudent, btnTeacher, btnStaff, btnRoom,
-            btnSchedule, btnTimetable, btnAttendance, btnCourse, btnClass,
+            btnSchedule, btnTimetable, btnAttendance, btnEducation,
             btnEnrollment, btnPlacementTest, btnCertificate, btnFinance
         };
 
@@ -196,13 +194,9 @@ public class MainFrame extends JFrame {
             cardLayout.show(contentPanel, "AttendancePanel");
             setActiveMenuButton(btnAttendance, navigationButtons, resourceTabButtons);
         });
-        btnCourse.addActionListener(e -> {
-            cardLayout.show(contentPanel, "CoursePanel");
-            setActiveMenuButton(btnCourse, navigationButtons, resourceTabButtons);
-        });
-        btnClass.addActionListener(e -> {
-            cardLayout.show(contentPanel, "ClassPanel");
-            setActiveMenuButton(btnClass, navigationButtons, resourceTabButtons);
+        btnEducation.addActionListener(e -> {
+            cardLayout.show(contentPanel, "EducationPanel");
+            setActiveMenuButton(btnEducation, navigationButtons, resourceTabButtons);
         });
         btnEnrollment.addActionListener(e -> {
             cardLayout.show(contentPanel, "EnrollmentPanel");
@@ -278,9 +272,7 @@ public class MainFrame extends JFrame {
         academicButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
         academicButtonsPanel.add(btnEnrollment);
         academicButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        academicButtonsPanel.add(btnCourse);
-        academicButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        academicButtonsPanel.add(btnClass);
+        academicButtonsPanel.add(btnEducation);
 
         btnToggleAcademic.addActionListener(e -> {
             boolean isExpanded = academicButtonsPanel.isVisible();
@@ -342,8 +334,7 @@ public class MainFrame extends JFrame {
             btnTeacher.setVisible(false);
             btnStaff.setVisible(false);
             btnRoom.setVisible(false);
-            btnCourse.setVisible(false);
-            btnClass.setVisible(false);
+            btnEducation.setVisible(false);
             btnEnrollment.setVisible(false);
             btnPlacementTest.setVisible(false);
             btnCertificate.setVisible(false);
@@ -546,6 +537,7 @@ public class MainFrame extends JFrame {
         if (text.contains("Ghi Danh")) return ENROLLMENT_BTN_COLOR;
         if (text.contains("Khóa Học")) return COURSE_BTN_COLOR;
         if (text.contains("Lớp Học")) return CLASS_BTN_COLOR;
+        if (text.contains("Khóa học & Lớp học")) return EDUCATION_BTN_COLOR;
         if (text.contains("Placement Test")) return PLACEMENT_TEST_BTN_COLOR;
         if (text.contains("Chứng Chỉ")) return CERTIFICATE_BTN_COLOR;
         return DEFAULT_MENU_BG;

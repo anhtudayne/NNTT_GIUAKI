@@ -8,6 +8,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class TeacherManagerPanel extends JPanel {
     private final TeacherApiService apiService;
@@ -29,50 +31,26 @@ public class TeacherManagerPanel extends JPanel {
 
     private void initComponents() {
         JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        toolbarPanel.setBackground(new Color(236, 240, 241));
-        toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(155, 89, 182)),
-            new EmptyBorder(10, 10, 10, 10)
-        ));
+        toolbarPanel.setBackground(Color.WHITE);
         
-        JLabel lblSearch = new JLabel("🎓 Tìm kiếm GV:");
-        lblSearch.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        toolbarPanel.add(lblSearch);
+        toolbarPanel.add(new JLabel("Tìm kiếm GV:"));
         txtSearch = new JTextField(22);
-        txtSearch.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        txtSearch.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
-            BorderFactory.createEmptyBorder(5, 8, 5, 8)
-        ));
         toolbarPanel.add(txtSearch);
         
-        JButton btnSearch = new JButton("Tìm kiếm");
-        btnSearch.setBackground(new Color(155, 89, 182));
-        btnSearch.setForeground(Color.WHITE);
-        btnSearch.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnSearch.setFocusPainted(false);
-        btnSearch.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchTeachers());
         toolbarPanel.add(btnSearch);
         
-        toolbarPanel.add(Box.createRigidArea(new Dimension(15, 0)));
-        chkOnlyActive = new JCheckBox("✓ Chỉ Giảng viên Active");
-        chkOnlyActive.setBackground(new Color(236, 240, 241));
-        chkOnlyActive.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        toolbarPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        chkOnlyActive = new JCheckBox("Chỉ Giảng viên Active");
+        chkOnlyActive.setBackground(Color.WHITE);
         chkOnlyActive.addActionListener(e -> {
             if (chkOnlyActive.isSelected()) loadActiveTeachers();
             else loadTeachers();
         });
         toolbarPanel.add(chkOnlyActive);
         
-        JButton btnRefresh = new JButton("⟳ Làm mới");
-        btnRefresh.setBackground(new Color(149, 165, 166));
-        btnRefresh.setForeground(Color.WHITE);
-        btnRefresh.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnRefresh.setFocusPainted(false);
-        btnRefresh.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> { chkOnlyActive.setSelected(false); loadTeachers(); });
         toolbarPanel.add(btnRefresh);
         add(toolbarPanel, BorderLayout.NORTH);
@@ -83,18 +61,11 @@ public class TeacherManagerPanel extends JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         teacherTable = new JTable(tableModel);
-        teacherTable.setRowHeight(36);
-        teacherTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        teacherTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        teacherTable.getTableHeader().setBackground(new Color(52, 73, 94));
-        teacherTable.getTableHeader().setForeground(Color.WHITE);
-        teacherTable.getTableHeader().setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(teacherTable);
+        
         teacherTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        teacherTable.setSelectionBackground(new Color(195, 155, 211));
-        teacherTable.setSelectionForeground(new Color(44, 62, 80));
-        teacherTable.setShowGrid(true);
-        teacherTable.setGridColor(new Color(220, 220, 220));
-        teacherTable.setIntercellSpacing(new Dimension(1, 1));
         teacherTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) updateSelectionState();
         });
@@ -108,40 +79,15 @@ public class TeacherManagerPanel extends JPanel {
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
-        Dimension btnSize = new Dimension(130, 40);
-        JButton btnAdd = new JButton("➕ Thêm");
-        btnAdd.setPreferredSize(btnSize);
-        btnAdd.setMinimumSize(btnSize);
-        btnAdd.setBackground(new Color(46, 204, 113));
-        btnAdd.setForeground(Color.WHITE);
-        btnAdd.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnAdd.setFocusPainted(false);
-        btnAdd.setBorderPainted(false);
-        btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
         
-        btnEdit = new JButton("✏️ Xem/Sửa");
-        btnEdit.setPreferredSize(btnSize);
-        btnEdit.setMinimumSize(btnSize);
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
-        btnEdit.setBackground(new Color(241, 196, 15));
-        btnEdit.setForeground(Color.WHITE);
-        btnEdit.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnEdit.setFocusPainted(false);
-        btnEdit.setBorderPainted(false);
-        btnEdit.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnEdit.addActionListener(e -> openEditDialog());
         
-        btnDelete = new JButton("🗑️ Xóa");
-        btnDelete.setPreferredSize(btnSize);
-        btnDelete.setMinimumSize(btnSize);
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
-        btnDelete.setBackground(new Color(231, 76, 60));
-        btnDelete.setForeground(Color.WHITE);
-        btnDelete.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnDelete.setFocusPainted(false);
-        btnDelete.setBorderPainted(false);
-        btnDelete.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnDelete.addActionListener(e -> deleteTeacher());
         bottomPanel.add(btnAdd);
         bottomPanel.add(btnEdit);

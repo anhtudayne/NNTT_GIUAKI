@@ -57,4 +57,21 @@ public class AttendanceApiService {
             throw new Exception("Lỗi khi Điểm danh: " + response.body());
         }
     }
+
+    // 3. Gọi API Lấy danh sách điểm danh cũ của 1 lớp trong 1 ngày
+    public List<Attendance> getAttendancesByClassIdAndDate(Integer classId, String date) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(API_URL + "/class/" + classId + "/date/" + date))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            Type listType = new TypeToken<List<Attendance>>(){}.getType();
+            return gson.fromJson(response.body(), listType);
+        } else {
+            throw new Exception("Lỗi Load Điểm danh cũ: " + response.body());
+        }
+    }
 }

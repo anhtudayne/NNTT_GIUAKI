@@ -8,6 +8,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class CourseManagerPanel extends JPanel {
 
@@ -34,12 +36,12 @@ public class CourseManagerPanel extends JPanel {
         toolbarPanel.add(new JLabel("Tìm kiếm khóa học:"));
         txtSearch = new JTextField(22);
         toolbarPanel.add(txtSearch);
-        JButton btnSearch = new JButton("Tìm kiếm");
+        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchCourses());
         toolbarPanel.add(btnSearch);
         Dimension refButtonSize = btnSearch.getPreferredSize();
 
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> loadCourses());
         toolbarPanel.add(btnRefresh);
 
@@ -53,13 +55,11 @@ public class CourseManagerPanel extends JPanel {
             }
         };
         courseTable = new JTable(tableModel);
-        courseTable.setRowHeight(32);
-        courseTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        courseTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        courseTable.getTableHeader().setBackground(new Color(245, 245, 245));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(courseTable);
+        
         courseTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        courseTable.setShowGrid(true);
-        courseTable.setGridColor(new Color(220, 220, 220));
 
         courseTable.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
@@ -78,20 +78,14 @@ public class CourseManagerPanel extends JPanel {
         bottomPanel.setMinimumSize(new Dimension(400, 50));
 
         Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
-        JButton btnAdd = new JButton("Thêm");
-        btnAdd.setPreferredSize(btnSize);
-        btnAdd.setMinimumSize(btnSize);
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
 
-        btnEdit = new JButton("Sửa");
-        btnEdit.setPreferredSize(btnSize);
-        btnEdit.setMinimumSize(btnSize);
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(e -> openEditDialog());
 
-        btnDelete = new JButton("Xóa");
-        btnDelete.setPreferredSize(btnSize);
-        btnDelete.setMinimumSize(btnSize);
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deleteCourse());
 
@@ -168,16 +162,29 @@ public class CourseManagerPanel extends JPanel {
     }
 
     private void loadCourses() {
-        try {
-            List<Course> list = apiService.getAllCourses();
-            updateTable(list);
-            selectedCourseId = null;
-            btnEdit.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        SwingWorker<List<Course>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Course> doInBackground() throws Exception {
+                // Fetch direct from API for the latest list
+                return apiService.getAllCourses();
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    List<Course> list = get();
+                    updateTable(list);
+                    selectedCourseId = null;
+                    btnEdit.setEnabled(false);
+                    btnDelete.setEnabled(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(CourseManagerPanel.this, "Lỗi khi tải danh sách: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void searchCourses() {
@@ -186,16 +193,28 @@ public class CourseManagerPanel extends JPanel {
             loadCourses();
             return;
         }
-        try {
-            List<Course> list = apiService.searchByName(searchText);
-            updateTable(list);
-            selectedCourseId = null;
-            btnEdit.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tìm kiếm: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        SwingWorker<List<Course>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Course> doInBackground() throws Exception {
+                return apiService.searchByName(searchText);
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    List<Course> list = get();
+                    updateTable(list);
+                    selectedCourseId = null;
+                    btnEdit.setEnabled(false);
+                    btnDelete.setEnabled(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(CourseManagerPanel.this, "Lỗi khi tìm kiếm: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void updateTable(List<Course> courses) {

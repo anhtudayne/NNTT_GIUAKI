@@ -11,6 +11,7 @@ import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.labels.StandardPieSectionLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PiePlot;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
@@ -26,12 +27,13 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 /**
  * Dashboard tổng quan theo phong cách doanh nghiệp:
  * - Header rõ ràng, cập nhật thời gian
  * - KPI cards chia nhóm (Hoạt động đào tạo / Tài chính), thiết kế thẻ chuyên nghiệp
- * - Biểu đồ cột doanh thu + biểu đồ tròn cơ cấu, bảng doanh thu theo tháng
+ * - Biểu đồ cột doanh thu theo tháng + (biểu đồ tròn doanh thu theo quý + biểu đồ cột ngang quy mô hoạt động), bảng doanh thu theo tháng
  * - Điểm trung bình và nút làm mới
  */
 public class DashboardPanel extends JPanel {
@@ -52,7 +54,9 @@ public class DashboardPanel extends JPanel {
     private JTable tblRevenue;
     private DefaultTableModel revenueTableModel;
     private JPanel revenueChartPanel;
-    private JPanel headcountChartPanel;
+    private JPanel rightChartsWrapper;
+    private JPanel quarterlyRevenueChartPanel;
+    private JPanel headcountBarChartPanel;
     private JTextField txtYearFilter;
     private JPanel centerContentPanel;
 
@@ -93,7 +97,7 @@ public class DashboardPanel extends JPanel {
         lblYear.setForeground(Color.WHITE);
         headerRight.add(lblYear);
         headerRight.add(txtYearFilter);
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createPrimaryButton("Làm mới");
         btnRefresh.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         btnRefresh.addActionListener(e -> {
             Integer year = null;
@@ -174,8 +178,8 @@ public class DashboardPanel extends JPanel {
 
         // ----- CHARTS ROW -----
         JPanel chartsRow = new JPanel(new GridLayout(1, 2, 16, 0));
-        chartsRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 320));
-        chartsRow.setPreferredSize(new Dimension(900, 320));
+        chartsRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 640));
+        chartsRow.setPreferredSize(new Dimension(900, 640));
         chartsRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         chartsRow.setOpaque(false);
 
@@ -190,16 +194,37 @@ public class DashboardPanel extends JPanel {
         revenueChartPanel.add(chartRevenueTitle, BorderLayout.NORTH);
         chartsRow.add(revenueChartPanel);
 
-        headcountChartPanel = new JPanel(new BorderLayout(8, 8));
-        headcountChartPanel.setBackground(CARD_BG);
-        headcountChartPanel.setBorder(BorderFactory.createCompoundBorder(
+        // Cột phải: 2 biểu đồ (Doanh thu theo quý + Quy mô hoạt động)
+        rightChartsWrapper = new JPanel();
+        rightChartsWrapper.setLayout(new BoxLayout(rightChartsWrapper, BoxLayout.Y_AXIS));
+        rightChartsWrapper.setBackground(new Color(245, 247, 250));
+        rightChartsWrapper.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        quarterlyRevenueChartPanel = new JPanel(new BorderLayout(8, 8));
+        quarterlyRevenueChartPanel.setBackground(CARD_BG);
+        quarterlyRevenueChartPanel.setBorder(BorderFactory.createCompoundBorder(
                 new MatteBorder(1, 1, 1, 1, CARD_BORDER),
                 new EmptyBorder(16, 16, 16, 16)));
-        JLabel chartHeadcountTitle = new JLabel("Cơ cấu nhân sự & lớp học");
-        chartHeadcountTitle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        chartHeadcountTitle.setForeground(TEXT_SECONDARY);
-        headcountChartPanel.add(chartHeadcountTitle, BorderLayout.NORTH);
-        chartsRow.add(headcountChartPanel);
+        JLabel quarterlyTitle = new JLabel("Cơ cấu doanh thu theo quý");
+        quarterlyTitle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        quarterlyTitle.setForeground(TEXT_SECONDARY);
+        quarterlyRevenueChartPanel.add(quarterlyTitle, BorderLayout.NORTH);
+        rightChartsWrapper.add(quarterlyRevenueChartPanel);
+
+        rightChartsWrapper.add(Box.createRigidArea(new Dimension(0, 12)));
+
+        headcountBarChartPanel = new JPanel(new BorderLayout(8, 8));
+        headcountBarChartPanel.setBackground(CARD_BG);
+        headcountBarChartPanel.setBorder(BorderFactory.createCompoundBorder(
+                new MatteBorder(1, 1, 1, 1, CARD_BORDER),
+                new EmptyBorder(16, 16, 16, 16)));
+        JLabel headcountBarTitle = new JLabel("Quy mô hoạt động");
+        headcountBarTitle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        headcountBarTitle.setForeground(TEXT_SECONDARY);
+        headcountBarChartPanel.add(headcountBarTitle, BorderLayout.NORTH);
+        rightChartsWrapper.add(headcountBarChartPanel);
+
+        chartsRow.add(rightChartsWrapper);
 
         centerContentPanel.add(chartsRow);
         centerContentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -289,7 +314,8 @@ public class DashboardPanel extends JPanel {
                 List<RevenueByMonth> revenues = apiService.getRevenueByMonth(year);
 
                 updateSummary(summary);
-                updateHeadcountChart(summary);
+                updateQuarterlyRevenueChart(revenues);
+                updateHeadcountBarChart(summary);
                 updateRevenueTable(revenues);
                 updateRevenueChart(revenues);
                 lblLastUpdated.setText("Cập nhật: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
@@ -362,23 +388,36 @@ public class DashboardPanel extends JPanel {
         revenueChartPanel.repaint();
     }
 
-    private void updateHeadcountChart(DashboardSummary s) {
-        if (s == null) return;
+    /** Biểu đồ tròn: cơ cấu doanh thu theo quý (Q1–Q4) từ dữ liệu doanh thu theo tháng. */
+    private void updateQuarterlyRevenueChart(List<RevenueByMonth> list) {
         DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
-        dataset.setValue("Học viên", s.getTotalActiveStudents());
-        dataset.setValue("Giảng viên", s.getTotalTeachers());
-        dataset.setValue("Nhân sự", s.getTotalStaff());
-        dataset.setValue("Lớp học", s.getTotalOngoingClasses());
+        if (list != null && !list.isEmpty()) {
+            BigDecimal q1 = BigDecimal.ZERO, q2 = BigDecimal.ZERO, q3 = BigDecimal.ZERO, q4 = BigDecimal.ZERO;
+            for (RevenueByMonth r : list) {
+                BigDecimal v = r.getTotalRevenue() != null ? r.getTotalRevenue() : BigDecimal.ZERO;
+                int m = r.getMonth();
+                if (m >= 1 && m <= 3) q1 = q1.add(v);
+                else if (m >= 4 && m <= 6) q2 = q2.add(v);
+                else if (m >= 7 && m <= 9) q3 = q3.add(v);
+                else if (m >= 10 && m <= 12) q4 = q4.add(v);
+            }
+            if (q1.compareTo(BigDecimal.ZERO) != 0) dataset.setValue("Q1 (T1–T3)", q1.doubleValue());
+            if (q2.compareTo(BigDecimal.ZERO) != 0) dataset.setValue("Q2 (T4–T6)", q2.doubleValue());
+            if (q3.compareTo(BigDecimal.ZERO) != 0) dataset.setValue("Q3 (T7–T9)", q3.doubleValue());
+            if (q4.compareTo(BigDecimal.ZERO) != 0) dataset.setValue("Q4 (T10–T12)", q4.doubleValue());
+        }
+        if (dataset.getItemCount() == 0) dataset.setValue("Chưa có dữ liệu", 1);
 
         JFreeChart chart = ChartFactory.createPieChart(null, dataset, true, true, false);
         chart.setBackgroundPaint(CARD_BG);
         PiePlot plot = (PiePlot) chart.getPlot();
         plot.setBackgroundPaint(CARD_BG);
         plot.setOutlineVisible(false);
-        plot.setSectionPaint("Học viên", new Color(46, 204, 113));
-        plot.setSectionPaint("Giảng viên", new Color(52, 152, 219));
-        plot.setSectionPaint("Nhân sự", new Color(155, 89, 182));
-        plot.setSectionPaint("Lớp học", new Color(241, 196, 15));
+        plot.setSectionPaint("Q1 (T1–T3)", new Color(46, 204, 113));
+        plot.setSectionPaint("Q2 (T4–T6)", new Color(52, 152, 219));
+        plot.setSectionPaint("Q3 (T7–T9)", new Color(155, 89, 182));
+        plot.setSectionPaint("Q4 (T10–T12)", new Color(241, 196, 15));
+        plot.setSectionPaint("Chưa có dữ liệu", new Color(189, 195, 199));
         plot.setLabelGenerator(new StandardPieSectionLabelGenerator(
                 "{0}: {1} ({2})",
                 new DecimalFormat("#,##0"),
@@ -386,15 +425,57 @@ public class DashboardPanel extends JPanel {
 
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setBackground(CARD_BG);
-        chartPanel.setPreferredSize(new Dimension(420, 280));
-        chartPanel.setMaximumSize(new Dimension(500, 300));
+        chartPanel.setPreferredSize(new Dimension(420, 260));
+        chartPanel.setMaximumSize(new Dimension(500, 280));
 
-        Component[] comps = headcountChartPanel.getComponents();
-        headcountChartPanel.removeAll();
-        for (Component c : comps) if (c instanceof JLabel) headcountChartPanel.add(c, BorderLayout.NORTH);
-        headcountChartPanel.add(chartPanel, BorderLayout.CENTER);
-        headcountChartPanel.revalidate();
-        headcountChartPanel.repaint();
+        Component[] comps = quarterlyRevenueChartPanel.getComponents();
+        quarterlyRevenueChartPanel.removeAll();
+        for (Component c : comps) if (c instanceof JLabel) quarterlyRevenueChartPanel.add(c, BorderLayout.NORTH);
+        quarterlyRevenueChartPanel.add(chartPanel, BorderLayout.CENTER);
+        quarterlyRevenueChartPanel.revalidate();
+        quarterlyRevenueChartPanel.repaint();
+    }
+
+    /** Biểu đồ cột ngang: so sánh quy mô Học viên, Giảng viên, Nhân sự, Lớp học. */
+    private void updateHeadcountBarChart(DashboardSummary s) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        if (s != null) {
+            dataset.addValue(s.getTotalActiveStudents(), "Số lượng", "Học viên");
+            dataset.addValue(s.getTotalTeachers(), "Số lượng", "Giảng viên");
+            dataset.addValue(s.getTotalStaff(), "Số lượng", "Nhân sự");
+            dataset.addValue(s.getTotalOngoingClasses(), "Số lượng", "Lớp học");
+        }
+
+        JFreeChart chart = ChartFactory.createBarChart(
+                "",
+                "",
+                "Số lượng",
+                dataset,
+                PlotOrientation.HORIZONTAL,
+                false,
+                false,
+                false
+        );
+        CategoryPlot plot = chart.getCategoryPlot();
+        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        renderer.setSeriesPaint(0, ACCENT_OPERATIONS);
+        renderer.setDefaultItemLabelsVisible(true);
+        renderer.setDefaultItemLabelGenerator(
+                new StandardCategoryItemLabelGenerator("{2}", new DecimalFormat("#,##0")));
+        chart.setBackgroundPaint(CARD_BG);
+        plot.setBackgroundPaint(CARD_BG);
+        plot.setOutlineVisible(false);
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setBackground(CARD_BG);
+        chartPanel.setPreferredSize(new Dimension(420, 260));
+        chartPanel.setMaximumSize(new Dimension(500, 280));
+
+        Component[] comps = headcountBarChartPanel.getComponents();
+        headcountBarChartPanel.removeAll();
+        for (Component c : comps) if (c instanceof JLabel) headcountBarChartPanel.add(c, BorderLayout.NORTH);
+        headcountBarChartPanel.add(chartPanel, BorderLayout.CENTER);
+        headcountBarChartPanel.revalidate();
+        headcountBarChartPanel.repaint();
     }
 
     private String formatMoney(BigDecimal value) {

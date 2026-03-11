@@ -91,15 +91,8 @@ public class Student {
 
     @Override
     public String toString() {
-        return "Student{" +
-                "id=" + studentId +
-                ", fullName='" + fullName + '\'' +
-                ", dateOfBirth='" + dateOfBirth + '\'' +
-                ", gender='" + gender + '\'' +
-                ", phone='" + phone + '\'' +
-                ", email='" + email + '\'' +
-                ", address='" + address + '\'' +
-                ", status='" + status + '\'' +
-                '}';
+        String id = studentId != null ? String.valueOf(studentId) : "--";
+        String name = fullName != null ? fullName : "";
+        return id + " - " + name;
     }
 }

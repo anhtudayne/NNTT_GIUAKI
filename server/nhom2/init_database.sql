@@ -145,12 +145,14 @@ CREATE TABLE Payment (
     PaymentID INT AUTO_INCREMENT PRIMARY KEY,
     StudentID INT,
     EnrollmentID INT,
+    InvoiceID INT NULL COMMENT 'Hóa đơn được thanh toán (1 hóa đơn có thể có nhiều lần thanh toán)',
     Amount DECIMAL(10, 2) NOT NULL,
     PaymentDate DATE,
     PaymentMethod ENUM('Cash', 'BankTransfer', 'Momo', 'Card') NOT NULL,
     Status ENUM('Success', 'Failed', 'Refunded') DEFAULT 'Success',
     FOREIGN KEY (StudentID) REFERENCES Student(StudentID) ON DELETE CASCADE,
-    FOREIGN KEY (EnrollmentID) REFERENCES Enrollment(EnrollmentID) ON DELETE CASCADE
+    FOREIGN KEY (EnrollmentID) REFERENCES Enrollment(EnrollmentID) ON DELETE CASCADE,
+    FOREIGN KEY (InvoiceID) REFERENCES Invoice(InvoiceID) ON DELETE SET NULL
 );
 
 CREATE TABLE Attendance (
@@ -260,9 +262,9 @@ INSERT INTO Invoice (StudentID, TotalAmount, IssueDate, Status) VALUES
 (1, 8500000, '2026-02-10', 'Paid'),
 (2, 3000000, '2026-02-16', 'Unpaid');
 
--- 13. Insert Payments
-INSERT INTO Payment (StudentID, EnrollmentID, Amount, PaymentDate, PaymentMethod) VALUES 
-(1, 1, 8500000, '2026-02-10', 'BankTransfer');
+-- 13. Insert Payments (InvoiceID: thanh toán gắn với hóa đơn)
+INSERT INTO Payment (StudentID, EnrollmentID, InvoiceID, Amount, PaymentDate, PaymentMethod) VALUES 
+(1, 1, 1, 8500000, '2026-02-10', 'BankTransfer');
 
 -- 14. Insert Attendances
 INSERT INTO Attendance (StudentID, ClassID, Date, Status) VALUES 
@@ -281,3 +283,20 @@ INSERT INTO UserAccount (Username, PasswordHash, Role, RelatedID) VALUES
 ('admin', 'admin123', 'Admin', 1), 
 ('teacher_an', 'pass123', 'Teacher', 1), 
 ('student_long', 'pass123', 'Student', 1);
+
+-- ==============================================================================
+-- VII. MIGRATION - CẬP NHẬT CSDL ĐÃ TỒN TẠI (chỉ chạy khi DB đã tạo trước đó)
+-- Chạy đoạn dưới trên database LanguageCenterDB đã có sẵn để thêm liên kết
+-- Payment -> Invoice (không cần DROP/CREATE lại DB).
+-- ==============================================================================
+-- USE LanguageCenterDB;
+
+-- ALTER TABLE Payment
+--     ADD COLUMN InvoiceID INT NULL
+--         COMMENT 'Hóa đơn được thanh toán (1 hóa đơn có thể có nhiều lần thanh toán)'
+--     AFTER EnrollmentID,
+--     ADD CONSTRAINT FK_Payment_Invoice
+--         FOREIGN KEY (InvoiceID) REFERENCES Invoice(InvoiceID) ON DELETE SET NULL;
+
+-- (Tùy chọn) Gắn thanh toán hiện có với hóa đơn: ví dụ Payment 1 thanh toán cho Invoice 1
+-- UPDATE Payment SET InvoiceID = 1 WHERE PaymentID = 1 AND StudentID = 1 AND Amount = 8500000;

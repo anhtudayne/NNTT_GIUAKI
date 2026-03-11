@@ -5,8 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import trungtamngoaingu.hcmute.entity.Invoice;
+import trungtamngoaingu.hcmute.entity.Payment;
 import trungtamngoaingu.hcmute.entity.Promotion;
 import trungtamngoaingu.hcmute.service.InvoiceService;
+import trungtamngoaingu.hcmute.service.PaymentService;
 import trungtamngoaingu.hcmute.service.PromotionService;
 
 import java.time.LocalDate;
@@ -21,6 +23,9 @@ public class InvoiceController {
     private InvoiceService invoiceService;
 
     @Autowired
+    private PaymentService paymentService;
+
+    @Autowired
     private PromotionService promotionService;
 
     @GetMapping
@@ -32,6 +37,15 @@ public class InvoiceController {
     public ResponseEntity<Invoice> getInvoiceById(@PathVariable Integer id) {
         Optional<Invoice> invoice = invoiceService.getInvoiceById(id);
         return invoice.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    /**
+     * Lấy danh sách thanh toán của một hóa đơn.
+     * Ví dụ: GET /api/invoices/1/payments
+     */
+    @GetMapping("/{id}/payments")
+    public ResponseEntity<List<Payment>> getPaymentsByInvoice(@PathVariable Integer id) {
+        return ResponseEntity.ok(paymentService.getPaymentsByInvoiceId(id));
     }
 
     @PostMapping

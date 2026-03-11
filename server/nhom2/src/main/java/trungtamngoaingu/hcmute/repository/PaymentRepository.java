@@ -10,4 +10,7 @@ import java.util.List;
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
   @Query("SELECT p FROM Payment p")
   List<Payment> myGetAll();
+
+  /** Lấy tất cả thanh toán thuộc một hóa đơn. */
+  List<Payment> findByInvoice_InvoiceId(Integer invoiceId);
 }

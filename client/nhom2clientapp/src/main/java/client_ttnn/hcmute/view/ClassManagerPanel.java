@@ -8,6 +8,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class ClassManagerPanel extends JPanel {
     private final ClassesApiService apiService;
@@ -32,11 +34,11 @@ public class ClassManagerPanel extends JPanel {
         toolbarPanel.add(new JLabel("Tìm kiếm lớp học:"));
         txtSearch = new JTextField(22);
         toolbarPanel.add(txtSearch);
-        JButton btnSearch = new JButton("Tìm kiếm");
+        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchClasses());
         toolbarPanel.add(btnSearch);
         Dimension refButtonSize = btnSearch.getPreferredSize();
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> loadClasses());
         toolbarPanel.add(btnRefresh);
         add(toolbarPanel, BorderLayout.NORTH);
@@ -47,13 +49,11 @@ public class ClassManagerPanel extends JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         classTable = new JTable(tableModel);
-        classTable.setRowHeight(32);
-        classTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        classTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        classTable.getTableHeader().setBackground(new Color(245, 245, 245));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(classTable);
+        
         classTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        classTable.setShowGrid(true);
-        classTable.setGridColor(new Color(220, 220, 220));
         classTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) updateSelectionState();
         });
@@ -68,18 +68,12 @@ public class ClassManagerPanel extends JPanel {
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
         Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
-        JButton btnAdd = new JButton("Thêm");
-        btnAdd.setPreferredSize(btnSize);
-        btnAdd.setMinimumSize(btnSize);
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
-        btnEdit = new JButton("Sửa");
-        btnEdit.setPreferredSize(btnSize);
-        btnEdit.setMinimumSize(btnSize);
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(e -> openEditDialog());
-        btnDelete = new JButton("Xóa");
-        btnDelete.setPreferredSize(btnSize);
-        btnDelete.setMinimumSize(btnSize);
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deleteClass());
         bottomPanel.add(btnAdd);
@@ -121,27 +115,58 @@ public class ClassManagerPanel extends JPanel {
     }
 
     private void loadClasses() {
-        try {
-            updateTable(apiService.getAllClasses());
-            selectedClassId = null;
-            btnEdit.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        SwingWorker<List<Classes>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Classes> doInBackground() throws Exception {
+                // Fetch direct from API for the latest list. Caching could be used, 
+                // but since this is the management screen, we want the freshest data.
+                return apiService.getAllClasses();
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    List<Classes> list = get();
+                    updateTable(list);
+                    selectedClassId = null;
+                    btnEdit.setEnabled(false);
+                    btnDelete.setEnabled(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(ClassManagerPanel.this, "Lỗi khi tải danh sách: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void searchClasses() {
         String q = txtSearch.getText().trim();
         if (q.isEmpty()) { loadClasses(); return; }
-        try {
-            updateTable(apiService.searchByName(q));
-            selectedClassId = null;
-            btnEdit.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        
+        SwingWorker<List<Classes>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Classes> doInBackground() throws Exception {
+                return apiService.searchByName(q);
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    List<Classes> list = get();
+                    updateTable(list);
+                    selectedClassId = null;
+                    btnEdit.setEnabled(false);
+                    btnDelete.setEnabled(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(ClassManagerPanel.this, "Lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void updateTable(List<Classes> list) {

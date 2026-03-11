@@ -8,6 +8,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 /**
  * Tab Quản lý Học viên: bảng danh sách phía trên, thanh tìm kiếm trên cùng,
@@ -37,47 +39,23 @@ public class StudentManagerPanel extends JPanel {
     private void initComponents() {
         // ----- Thanh công cụ: tìm kiếm + Làm mới -----
         JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        toolbarPanel.setBackground(new Color(236, 240, 241));
-        toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(52, 152, 219)),
-            new EmptyBorder(10, 10, 10, 10)
-        ));
+        toolbarPanel.setBackground(Color.WHITE);
         
-        JLabel lblSearch = new JLabel("🔍 Tìm theo tên:");
-        lblSearch.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        toolbarPanel.add(lblSearch);
+        toolbarPanel.add(new JLabel("Tìm kiếm học viên:"));
         txtSearch = new JTextField(22);
-        txtSearch.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        txtSearch.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
-            BorderFactory.createEmptyBorder(5, 8, 5, 8)
-        ));
         toolbarPanel.add(txtSearch);
         
-        JButton btnSearch = new JButton("Tìm kiếm");
-        btnSearch.setBackground(new Color(52, 152, 219));
-        btnSearch.setForeground(Color.WHITE);
-        btnSearch.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnSearch.setFocusPainted(false);
-        btnSearch.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchStudents());
         toolbarPanel.add(btnSearch);
         
-        toolbarPanel.add(Box.createRigidArea(new Dimension(15, 0)));
-        chkActiveOnly = new JCheckBox("✓ Chỉ hiển thị Active");
-        chkActiveOnly.setBackground(new Color(236, 240, 241));
-        chkActiveOnly.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        toolbarPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        chkActiveOnly = new JCheckBox("Chỉ hiển thị Active");
+        chkActiveOnly.setBackground(Color.WHITE);
         chkActiveOnly.addActionListener(e -> applyCurrentFilter());
         toolbarPanel.add(chkActiveOnly);
 
-        JButton btnRefresh = new JButton("⟳ Làm mới");
-        btnRefresh.setBackground(new Color(149, 165, 166));
-        btnRefresh.setForeground(Color.WHITE);
-        btnRefresh.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnRefresh.setFocusPainted(false);
-        btnRefresh.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> loadStudents());
         toolbarPanel.add(btnRefresh);
 
@@ -92,18 +70,11 @@ public class StudentManagerPanel extends JPanel {
             }
         };
         studentTable = new JTable(tableModel);
-        studentTable.setRowHeight(36);
-        studentTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        studentTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        studentTable.getTableHeader().setBackground(new Color(52, 73, 94));
-        studentTable.getTableHeader().setForeground(Color.WHITE);
-        studentTable.getTableHeader().setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(studentTable);
+        
         studentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        studentTable.setSelectionBackground(new Color(174, 214, 241));
-        studentTable.setSelectionForeground(new Color(44, 62, 80));
-        studentTable.setShowGrid(true);
-        studentTable.setGridColor(new Color(220, 220, 220));
-        studentTable.setIntercellSpacing(new Dimension(1, 1));
 
         studentTable.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
@@ -122,53 +93,19 @@ public class StudentManagerPanel extends JPanel {
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
 
-        // Lấy kích thước nút "Tìm kiếm" làm chuẩn cho Thêm / Sửa / Xóa
-        Dimension btnSize = new Dimension(130, 40);
-        JButton btnAdd = new JButton("➕ Thêm");
-        btnAdd.setPreferredSize(btnSize);
-        btnAdd.setMinimumSize(btnSize);
-        btnAdd.setBackground(new Color(46, 204, 113));
-        btnAdd.setForeground(Color.WHITE);
-        btnAdd.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnAdd.setFocusPainted(false);
-        btnAdd.setBorderPainted(false);
-        btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
 
-        btnEdit = new JButton("✏️ Xem/Sửa");
-        btnEdit.setPreferredSize(btnSize);
-        btnEdit.setMinimumSize(btnSize);
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
-        btnEdit.setBackground(new Color(241, 196, 15));
-        btnEdit.setForeground(Color.WHITE);
-        btnEdit.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnEdit.setFocusPainted(false);
-        btnEdit.setBorderPainted(false);
-        btnEdit.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnEdit.addActionListener(e -> openEditDialog());
 
-        btnDetails = new JButton("📊 Chi tiết");
-        btnDetails.setPreferredSize(btnSize);
-        btnDetails.setMinimumSize(btnSize);
+        btnDetails = ButtonStyles.createNeutralButton("Chi tiết");
         btnDetails.setEnabled(false);
-        btnDetails.setBackground(new Color(155, 89, 182));
-        btnDetails.setForeground(Color.WHITE);
-        btnDetails.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnDetails.setFocusPainted(false);
-        btnDetails.setBorderPainted(false);
-        btnDetails.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnDetails.addActionListener(e -> openDetailDialog());
 
-        btnDelete = new JButton("🗑️ Xóa");
-        btnDelete.setPreferredSize(btnSize);
-        btnDelete.setMinimumSize(btnSize);
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
-        btnDelete.setBackground(new Color(231, 76, 60));
-        btnDelete.setForeground(Color.WHITE);
-        btnDelete.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnDelete.setFocusPainted(false);
-        btnDelete.setBorderPainted(false);
-        btnDelete.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnDelete.addActionListener(e -> deleteStudent());
 
         bottomPanel.add(btnAdd);

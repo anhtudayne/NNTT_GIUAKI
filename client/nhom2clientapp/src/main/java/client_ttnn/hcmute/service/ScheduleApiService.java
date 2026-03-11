@@ -3,6 +3,7 @@ package client_ttnn.hcmute.service;
 import client_ttnn.hcmute.model.Schedule;
 import client_ttnn.hcmute.model.Room;
 import client_ttnn.hcmute.model.Teacher;
+import client_ttnn.hcmute.dto.BatchScheduleRequest;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -96,6 +97,25 @@ public class ScheduleApiService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public int createBatchSchedules(BatchScheduleRequest requestPayload) {
+        try {
+            String jsonPayload = gson.toJson(requestPayload);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(API_URL + "/batch"))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 201) {
+                return Integer.parseInt(response.body());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     public boolean updateSchedule(Schedule schedule) {

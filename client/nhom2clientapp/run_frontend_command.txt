@@ -1,0 +1,8 @@
+Lệnh để biên dịch (build) và chạy giao diện Frontend (Java Swing) của dự án:
+
+1. Mở Terminal (Command Prompt / PowerShell).
+2. Tới thư mục chứa file pom.xml của Frontend:
+   cd /Users/vovantu/NNTT_GIUAKI/NNTT_GIUAKI/client/nhom2clientapp
+
+3. Copy và dán lệnh sau để chạy:
+mvn clean compile exec:java -Dexec.mainClass="client_ttnn.hcmute.App"

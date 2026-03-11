@@ -120,4 +120,20 @@ public class ClassesApiService {
             throw new Exception("Failed to search classes: " + response.statusCode());
         }
     }
+
+    // GET Classes by Teacher ID
+    public List<Classes> getClassesByTeacherId(Long teacherId) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(BASE_URL + "/teacher/" + teacherId))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        if (response.statusCode() == 200) {
+            return gson.fromJson(response.body(), new TypeToken<List<Classes>>(){}.getType());
+        } else {
+            throw new Exception("Failed to get classes for teacher: " + response.statusCode());
+        }
+    }
 }

@@ -10,6 +10,7 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class TimetableViewPanel extends JPanel {
     private final ScheduleApiService apiService;
@@ -41,7 +42,7 @@ public class TimetableViewPanel extends JPanel {
 
         // ----- HEADER LƯỚT TUẦN -----
         JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        JButton btnPrevWeek = new JButton("<< Tuần Trước");
+        JButton btnPrevWeek = ButtonStyles.createNeutralButton("<< Tuần Trước");
         btnPrevWeek.addActionListener(e -> {
             startOfWeek = startOfWeek.minusWeeks(1);
             updateWeekLabel();
@@ -52,14 +53,14 @@ public class TimetableViewPanel extends JPanel {
         lblCurrentWeek.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
         updateWeekLabel();
 
-        JButton btnNextWeek = new JButton("Tuần Sau >>");
+        JButton btnNextWeek = ButtonStyles.createNeutralButton("Tuần Sau >>");
         btnNextWeek.addActionListener(e -> {
             startOfWeek = startOfWeek.plusWeeks(1);
             updateWeekLabel();
             loadTimetableData();
         });
         
-        JButton btnRefresh = new JButton("Làm mới Lịch");
+        JButton btnRefresh = ButtonStyles.createPrimaryButton("Làm mới Lịch");
         btnRefresh.addActionListener(e -> loadTimetableData());
 
         headerPanel.add(btnPrevWeek);
