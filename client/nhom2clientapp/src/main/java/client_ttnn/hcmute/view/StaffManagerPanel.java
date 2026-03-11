@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class StaffManagerPanel extends JPanel {
 
@@ -38,7 +39,7 @@ public class StaffManagerPanel extends JPanel {
         txtSearch = new JTextField(22);
         toolbarPanel.add(txtSearch);
         
-        JButton btnSearch = new JButton("Tìm kiếm");
+        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchStaffByName());
         toolbarPanel.add(btnSearch);
         Dimension refButtonSize = btnSearch.getPreferredSize();
@@ -49,7 +50,7 @@ public class StaffManagerPanel extends JPanel {
         cmbFilterRole.addActionListener(e -> filterStaffByRole());
         toolbarPanel.add(cmbFilterRole);
 
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> loadStaffList());
         toolbarPanel.add(btnRefresh);
 
@@ -86,20 +87,14 @@ public class StaffManagerPanel extends JPanel {
         bottomPanel.setMinimumSize(new Dimension(400, 50));
 
         Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
-        JButton btnAdd = new JButton("Thêm");
-        btnAdd.setPreferredSize(btnSize);
-        btnAdd.setMinimumSize(btnSize);
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
 
-        btnEdit = new JButton("Sửa");
-        btnEdit.setPreferredSize(btnSize);
-        btnEdit.setMinimumSize(btnSize);
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(e -> openEditDialog());
 
-        btnDelete = new JButton("Xóa");
-        btnDelete.setPreferredSize(btnSize);
-        btnDelete.setMinimumSize(btnSize);
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deleteStaff());
 

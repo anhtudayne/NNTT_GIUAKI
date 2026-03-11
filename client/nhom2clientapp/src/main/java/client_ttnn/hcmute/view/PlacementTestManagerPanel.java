@@ -13,6 +13,7 @@ import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.*;
 import java.util.Collections;
 import java.util.List;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class PlacementTestManagerPanel extends JPanel {
     private static final Color BG = new Color(245, 247, 250);
@@ -66,10 +67,10 @@ public class PlacementTestManagerPanel extends JPanel {
                 BorderFactory.createEmptyBorder(6, 8, 6, 8)
         ));
         toolbarPanel.add(txtSearchId);
-        JButton btnSearch = createPrimaryButton("Tìm");
+        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchById());
         toolbarPanel.add(btnSearch);
-        JButton btnRefresh = createNeutralButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> loadPlacementTests());
         toolbarPanel.add(btnRefresh);
         toolbarPanel.add(Box.createHorizontalStrut(8));
@@ -113,12 +114,12 @@ public class PlacementTestManagerPanel extends JPanel {
         bottomPanel.setBackground(BG);
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
-        JButton btnAdd = createPrimaryButton("Thêm placement test");
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm placement test");
         btnAdd.addActionListener(e -> openAddDialog());
-        btnEdit = createNeutralButton("Sửa");
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(e -> openEditDialog());
-        btnDelete = createDangerButton("Xóa");
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deleteTest());
         bottomPanel.add(btnAdd);
@@ -227,42 +228,6 @@ public class PlacementTestManagerPanel extends JPanel {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    private JButton createPrimaryButton(String text) {
-        JButton b = new JButton(text);
-        b.setFocusPainted(false);
-        b.setBackground(PRIMARY);
-        b.setForeground(Color.WHITE);
-        b.setMargin(new Insets(10, 18, 10, 18));
-        b.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
-        b.putClientProperty(FlatClientProperties.STYLE, "arc: 16");
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return b;
-    }
-
-    private JButton createNeutralButton(String text) {
-        JButton b = new JButton(text);
-        b.setFocusPainted(false);
-        b.setBackground(new Color(236, 239, 241));
-        b.setForeground(new Color(33, 33, 33));
-        b.setMargin(new Insets(10, 18, 10, 18));
-        b.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
-        b.putClientProperty(FlatClientProperties.STYLE, "arc: 16");
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return b;
-    }
-
-    private JButton createDangerButton(String text) {
-        JButton b = new JButton(text);
-        b.setFocusPainted(false);
-        b.setBackground(DANGER);
-        b.setForeground(Color.WHITE);
-        b.setMargin(new Insets(10, 18, 10, 18));
-        b.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
-        b.putClientProperty(FlatClientProperties.STYLE, "arc: 16");
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return b;
     }
 
     private DefaultTableCellRenderer zebraRenderer() {

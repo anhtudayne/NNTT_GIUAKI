@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class RoomManagerPanel extends JPanel {
 
@@ -38,7 +39,7 @@ public class RoomManagerPanel extends JPanel {
         txtMinCapacity = new JTextField(8);
         toolbarPanel.add(txtMinCapacity);
         
-        JButton btnFilterCapacity = new JButton("Lọc Capacity");
+        JButton btnFilterCapacity = ButtonStyles.createPrimaryButton("Lọc Capacity");
         btnFilterCapacity.addActionListener(e -> filterRoomsByCapacity());
         toolbarPanel.add(btnFilterCapacity);
         Dimension refButtonSize = btnFilterCapacity.getPreferredSize();
@@ -49,7 +50,7 @@ public class RoomManagerPanel extends JPanel {
         cmbFilterStatus.addActionListener(e -> filterRoomsByStatus());
         toolbarPanel.add(cmbFilterStatus);
 
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> {
             txtMinCapacity.setText("");
             cmbFilterStatus.setSelectedIndex(0);
@@ -90,20 +91,14 @@ public class RoomManagerPanel extends JPanel {
         bottomPanel.setMinimumSize(new Dimension(400, 50));
 
         Dimension btnSize = new Dimension(refButtonSize.width + 20, refButtonSize.height);
-        JButton btnAdd = new JButton("Thêm");
-        btnAdd.setPreferredSize(btnSize);
-        btnAdd.setMinimumSize(btnSize);
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
 
-        btnEdit = new JButton("Sửa");
-        btnEdit.setPreferredSize(btnSize);
-        btnEdit.setMinimumSize(btnSize);
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(e -> openEditDialog());
 
-        btnDelete = new JButton("Xóa");
-        btnDelete.setPreferredSize(btnSize);
-        btnDelete.setMinimumSize(btnSize);
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deleteRoom());
 

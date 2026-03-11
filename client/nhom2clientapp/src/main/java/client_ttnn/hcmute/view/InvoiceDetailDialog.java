@@ -12,6 +12,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 /**
  * Dialog chi tiết hóa đơn: thông tin hóa đơn + bảng thanh toán + nút "Thêm thanh toán".
@@ -90,13 +91,13 @@ public class InvoiceDetailDialog extends JDialog {
         centerWrap.setBackground(Color.WHITE);
         centerWrap.add(scroll, BorderLayout.CENTER);
 
-        JButton btnAddPayment = new JButton("➕ Thêm thanh toán");
+        JButton btnAddPayment = ButtonStyles.createPrimaryButton("➕ Thêm thanh toán");
         btnAddPayment.addActionListener(e -> openAddPayment());
         centerWrap.add(btnAddPayment, BorderLayout.SOUTH);
 
         content.add(centerWrap, BorderLayout.CENTER);
 
-        JButton btnClose = new JButton("Đóng");
+        JButton btnClose = ButtonStyles.createNeutralButton("Đóng");
         btnClose.addActionListener(e -> dispose());
         JPanel southPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         southPanel.setBackground(Color.WHITE);

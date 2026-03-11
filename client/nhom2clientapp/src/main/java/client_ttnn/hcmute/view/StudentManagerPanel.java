@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 /**
  * Tab Quản lý Học viên: bảng danh sách phía trên, thanh tìm kiếm trên cùng,
@@ -44,7 +45,7 @@ public class StudentManagerPanel extends JPanel {
         txtSearch = new JTextField(22);
         toolbarPanel.add(txtSearch);
         
-        JButton btnSearch = new JButton("Tìm kiếm");
+        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchStudents());
         toolbarPanel.add(btnSearch);
         Dimension refButtonSize = btnSearch.getPreferredSize();
@@ -55,7 +56,7 @@ public class StudentManagerPanel extends JPanel {
         chkActiveOnly.addActionListener(e -> applyCurrentFilter());
         toolbarPanel.add(chkActiveOnly);
 
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> loadStudents());
         toolbarPanel.add(btnRefresh);
 
@@ -95,26 +96,18 @@ public class StudentManagerPanel extends JPanel {
 
         // Lấy kích thước nút "Tìm kiếm" làm chuẩn cho Thêm / Sửa / Xóa
         Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
-        JButton btnAdd = new JButton("Thêm");
-        btnAdd.setPreferredSize(btnSize);
-        btnAdd.setMinimumSize(btnSize);
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
 
-        btnEdit = new JButton("Sửa");
-        btnEdit.setPreferredSize(btnSize);
-        btnEdit.setMinimumSize(btnSize);
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(e -> openEditDialog());
 
-        btnDetails = new JButton("Chi tiết");
-        btnDetails.setPreferredSize(btnSize);
-        btnDetails.setMinimumSize(btnSize);
+        btnDetails = ButtonStyles.createNeutralButton("Chi tiết");
         btnDetails.setEnabled(false);
         btnDetails.addActionListener(e -> openDetailDialog());
 
-        btnDelete = new JButton("Xóa");
-        btnDelete.setPreferredSize(btnSize);
-        btnDelete.setMinimumSize(btnSize);
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deleteStudent());
 

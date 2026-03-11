@@ -8,6 +8,7 @@ import client_ttnn.hcmute.service.EnrollmentApiService;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class EnrollmentFormDialog extends JDialog {
     private final EnrollmentApiService apiService;
@@ -79,10 +80,10 @@ public class EnrollmentFormDialog extends JDialog {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         btnPanel.setBackground(Color.WHITE);
         Dimension refBtn = new JButton("Tìm kiếm").getPreferredSize();
-        JButton btnSave = new JButton("Lưu");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
         btnSave.setPreferredSize(refBtn);
         btnSave.setMinimumSize(refBtn);
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnCancel.setPreferredSize(refBtn);
         btnCancel.setMinimumSize(refBtn);
         btnSave.addActionListener(e -> save());

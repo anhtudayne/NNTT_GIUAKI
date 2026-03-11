@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class RoomFormDialog extends JDialog {
 
@@ -125,19 +126,11 @@ public class RoomFormDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         buttonPanel.setBackground(new Color(245, 247, 250));
 
-        JButton btnSave = new JButton("Lưu");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
         btnSave.setPreferredSize(new Dimension(100, 35));
-        btnSave.setBackground(new Color(46, 204, 113));
-        btnSave.setForeground(Color.WHITE);
-        btnSave.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        btnSave.setFocusPainted(false);
         
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnCancel.setPreferredSize(new Dimension(100, 35));
-        btnCancel.setBackground(new Color(231, 76, 60));
-        btnCancel.setForeground(Color.WHITE);
-        btnCancel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        btnCancel.setFocusPainted(false);
 
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());

@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class ClassManagerPanel extends JPanel {
     private final ClassesApiService apiService;
@@ -33,11 +34,11 @@ public class ClassManagerPanel extends JPanel {
         toolbarPanel.add(new JLabel("Tìm kiếm lớp học:"));
         txtSearch = new JTextField(22);
         toolbarPanel.add(txtSearch);
-        JButton btnSearch = new JButton("Tìm kiếm");
+        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchClasses());
         toolbarPanel.add(btnSearch);
         Dimension refButtonSize = btnSearch.getPreferredSize();
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> loadClasses());
         toolbarPanel.add(btnRefresh);
         add(toolbarPanel, BorderLayout.NORTH);
@@ -67,18 +68,12 @@ public class ClassManagerPanel extends JPanel {
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
         Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
-        JButton btnAdd = new JButton("Thêm");
-        btnAdd.setPreferredSize(btnSize);
-        btnAdd.setMinimumSize(btnSize);
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
-        btnEdit = new JButton("Sửa");
-        btnEdit.setPreferredSize(btnSize);
-        btnEdit.setMinimumSize(btnSize);
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(e -> openEditDialog());
-        btnDelete = new JButton("Xóa");
-        btnDelete.setPreferredSize(btnSize);
-        btnDelete.setMinimumSize(btnSize);
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deleteClass());
         bottomPanel.add(btnAdd);

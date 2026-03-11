@@ -10,6 +10,7 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.math.BigDecimal;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class PromotionFormDialog extends JDialog {
 
@@ -109,10 +110,10 @@ public class PromotionFormDialog extends JDialog {
         buttonPanel.setBackground(Color.WHITE);
         Dimension refBtnSize = new JButton("Tìm kiếm").getPreferredSize();
 
-        JButton btnSave = new JButton("Lưu");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
         btnSave.setPreferredSize(refBtnSize);
         btnSave.setMinimumSize(refBtnSize);
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnCancel.setPreferredSize(refBtnSize);
         btnCancel.setMinimumSize(refBtnSize);
 

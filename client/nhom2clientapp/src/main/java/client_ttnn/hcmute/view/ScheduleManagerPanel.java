@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import client_ttnn.hcmute.dto.BatchScheduleRequest;
+import client_ttnn.hcmute.util.ButtonStyles;
 public class ScheduleManagerPanel extends JPanel {
     private final ScheduleApiService apiService;
     private final CacheManager cacheManager;
@@ -239,9 +240,7 @@ public class ScheduleManagerPanel extends JPanel {
         gbc.gridx = 1; formPanel.add(cmbEndTime, gbc);
 
         // NÚT CHECK DÙNG STREAM API
-        btnCheckAvailable = new JButton("1. Kiểm tra Phòng trống / GV Rảnh");
-        btnCheckAvailable.setBackground(new Color(41, 128, 185));
-        btnCheckAvailable.setForeground(Color.WHITE);
+        btnCheckAvailable = ButtonStyles.createPrimaryButton("1. Kiểm tra Phòng trống / GV Rảnh");
         btnCheckAvailable.addActionListener(e -> checkAvailability());
         
         gbc.gridx = 0; gbc.gridy = rowCount;
@@ -257,11 +256,11 @@ public class ScheduleManagerPanel extends JPanel {
         // Buttons hành động
         JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
-        JButton btnAdd = new JButton("2. Thêm Lịch");
+        JButton btnAdd = ButtonStyles.createPrimaryButton("2. Thêm Lịch");
         btnAdd.addActionListener(e -> createSchedule());
-        JButton btnDelete = new JButton("Xóa lầm");
+        JButton btnDelete = ButtonStyles.createDangerButton("Xóa lầm");
         btnDelete.addActionListener(e -> deleteSchedule());
-        JButton btnClear = new JButton("Refresh");
+        JButton btnClear = ButtonStyles.createNeutralButton("Refresh");
         btnClear.addActionListener(e -> {
             loadDataAsync();
             clearForm();

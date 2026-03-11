@@ -6,6 +6,7 @@ import client_ttnn.hcmute.service.AuthApiService;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class LoginFrame extends JFrame {
 
@@ -78,7 +79,7 @@ public class LoginFrame extends JFrame {
             BorderFactory.createEmptyBorder(5, 10, 5, 10)));
 
         // Nút Đăng nhập
-        btnLogin = new JButton("ĐĂNG NHẬP");
+        btnLogin = ButtonStyles.createPrimaryButton("ĐĂNG NHẬP");
         btnLogin.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
         btnLogin.setForeground(Color.WHITE);
         btnLogin.setBackground(new Color(46, 204, 113)); // Xanh Emerald

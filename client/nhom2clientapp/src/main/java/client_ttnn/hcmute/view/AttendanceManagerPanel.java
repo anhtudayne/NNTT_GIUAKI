@@ -13,6 +13,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
 import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public class AttendanceManagerPanel extends JPanel {
         txtDate.setToolTipText("yyyy-MM-dd");
         filterPanel.add(txtDate);
 
-        btnLoadStudents = new JButton("Tải Danh Sách Lớp");
+        btnLoadStudents = ButtonStyles.createPrimaryButton("Tải Danh Sách Lớp");
         btnLoadStudents.addActionListener(e -> loadStudentsToTable());
         filterPanel.add(btnLoadStudents);
 
@@ -96,8 +97,7 @@ public class AttendanceManagerPanel extends JPanel {
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
 
-        btnSaveAttendance = new JButton("Lưu Điểm Danh");
-        btnSaveAttendance.setPreferredSize(new Dimension(150, 40));
+        btnSaveAttendance = ButtonStyles.createPrimaryButton("Lưu Điểm Danh");
         btnSaveAttendance.addActionListener(e -> saveBatchAttendances());
         bottomPanel.add(btnSaveAttendance);
 

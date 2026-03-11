@@ -6,6 +6,7 @@ import client_ttnn.hcmute.service.CourseApiService;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class CourseFormDialog extends JDialog {
 
@@ -104,10 +105,10 @@ public class CourseFormDialog extends JDialog {
         buttonPanel.setBackground(Color.WHITE);
         Dimension refBtnSize = new JButton("Tìm kiếm").getPreferredSize();
 
-        JButton btnSave = new JButton("Lưu");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
         btnSave.setPreferredSize(refBtnSize);
         btnSave.setMinimumSize(refBtnSize);
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnCancel.setPreferredSize(refBtnSize);
         btnCancel.setMinimumSize(refBtnSize);
 

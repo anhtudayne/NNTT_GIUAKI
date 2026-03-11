@@ -13,6 +13,7 @@ import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 import client_ttnn.hcmute.util.TableCustomizer;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class PromotionManagerPanel extends JPanel {
     private static final Color BG = new Color(245, 247, 250);
@@ -69,7 +70,7 @@ public class PromotionManagerPanel extends JPanel {
                 BorderFactory.createEmptyBorder(6, 8, 6, 8)
         ));
         toolbarPanel.add(txtPromotionIdSearch);
-        JButton btnSearchId = createPrimaryButton("Tìm");
+        JButton btnSearchId = ButtonStyles.createPrimaryButton("Tìm");
         btnSearchId.addActionListener(e -> searchPromotionById());
         toolbarPanel.add(btnSearchId);
         Dimension refButtonSize = btnSearchId.getPreferredSize();
@@ -83,11 +84,11 @@ public class PromotionManagerPanel extends JPanel {
                 BorderFactory.createEmptyBorder(6, 8, 6, 8)
         ));
         toolbarPanel.add(txtCodeSearch);
-        JButton btnSearchCode = createNeutralButton("Tìm code");
+        JButton btnSearchCode = ButtonStyles.createNeutralButton("Tìm code");
         btnSearchCode.addActionListener(e -> searchPromotionByCode());
         toolbarPanel.add(btnSearchCode);
 
-        JButton btnRefresh = createNeutralButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
         btnRefresh.addActionListener(e -> loadPromotions());
         toolbarPanel.add(btnRefresh);
 
@@ -132,14 +133,14 @@ public class PromotionManagerPanel extends JPanel {
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
 
-        JButton btnAdd = createPrimaryButton("Thêm khuyến mãi");
+        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm khuyến mãi");
         btnAdd.addActionListener(e -> openAddDialog());
 
-        btnEdit = createNeutralButton("Sửa");
+        btnEdit = ButtonStyles.createNeutralButton("Sửa");
         btnEdit.setEnabled(false);
         btnEdit.addActionListener(e -> openEditDialog());
 
-        btnDelete = createDangerButton("Xóa");
+        btnDelete = ButtonStyles.createDangerButton("Xóa");
         btnDelete.setEnabled(false);
         btnDelete.addActionListener(e -> deletePromotion());
 
@@ -148,42 +149,6 @@ public class PromotionManagerPanel extends JPanel {
         bottomPanel.add(btnDelete);
 
         add(bottomPanel, BorderLayout.SOUTH);
-    }
-
-    private JButton createPrimaryButton(String text) {
-        JButton b = new JButton(text);
-        b.setFocusPainted(false);
-        b.setBackground(PRIMARY);
-        b.setForeground(Color.WHITE);
-        b.setMargin(new Insets(10, 18, 10, 18));
-        b.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
-        b.putClientProperty(FlatClientProperties.STYLE, "arc: 16");
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return b;
-    }
-
-    private JButton createNeutralButton(String text) {
-        JButton b = new JButton(text);
-        b.setFocusPainted(false);
-        b.setBackground(new Color(236, 239, 241));
-        b.setForeground(new Color(33, 33, 33));
-        b.setMargin(new Insets(10, 18, 10, 18));
-        b.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
-        b.putClientProperty(FlatClientProperties.STYLE, "arc: 16");
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return b;
-    }
-
-    private JButton createDangerButton(String text) {
-        JButton b = new JButton(text);
-        b.setFocusPainted(false);
-        b.setBackground(DANGER);
-        b.setForeground(Color.WHITE);
-        b.setMargin(new Insets(10, 18, 10, 18));
-        b.putClientProperty(FlatClientProperties.BUTTON_TYPE, FlatClientProperties.BUTTON_TYPE_ROUND_RECT);
-        b.putClientProperty(FlatClientProperties.STYLE, "arc: 16");
-        b.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        return b;
     }
 
     private DefaultTableCellRenderer zebraRenderer() {

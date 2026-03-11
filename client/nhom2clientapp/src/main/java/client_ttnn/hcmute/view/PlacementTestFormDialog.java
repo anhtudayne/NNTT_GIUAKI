@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class PlacementTestFormDialog extends JDialog {
     private final PlacementTestApiService apiService;
@@ -95,8 +96,8 @@ public class PlacementTestFormDialog extends JDialog {
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         btnPanel.setBackground(Color.WHITE);
-        JButton btnSave = new JButton("Lưu");
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());
         btnPanel.add(btnCancel);
@@ -119,8 +120,8 @@ public class PlacementTestFormDialog extends JDialog {
     private JComponent withClearButton(JComboBox<?> combo) {
         JPanel wrapper = new JPanel(new BorderLayout(8, 0));
         wrapper.setOpaque(false);
-        JButton btnClear = new JButton("Xoa");
-        btnClear.setMargin(new Insets(2, 8, 2, 8));
+        JButton btnClear = ButtonStyles.createNeutralButton("Xoa");
+        btnClear.setMargin(new Insets(4, 10, 4, 10));
         btnClear.setToolTipText("Xoa lua chon");
         btnClear.addActionListener(e -> {
             combo.setSelectedItem(null);

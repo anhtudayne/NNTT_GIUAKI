@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 public class PaymentFormDialog extends JDialog {
     private final PaymentApiService apiService;
@@ -162,10 +163,10 @@ public class PaymentFormDialog extends JDialog {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         btnPanel.setBackground(Color.WHITE);
         Dimension refBtn = new JButton("Tìm kiếm").getPreferredSize();
-        JButton btnSave = new JButton("Lưu");
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
         btnSave.setPreferredSize(refBtn);
         btnSave.setMinimumSize(refBtn);
-        JButton btnCancel = new JButton("Hủy");
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
         btnCancel.setPreferredSize(refBtn);
         btnCancel.setMinimumSize(refBtn);
         btnSave.addActionListener(e -> save());
@@ -187,8 +188,8 @@ public class PaymentFormDialog extends JDialog {
     private JComponent withClearButton(JComboBox<?> combo) {
         JPanel wrapper = new JPanel(new BorderLayout(8, 0));
         wrapper.setOpaque(false);
-        JButton btnClear = new JButton("Xoa");
-        btnClear.setMargin(new Insets(2, 8, 2, 8));
+        JButton btnClear = ButtonStyles.createNeutralButton("Xoa");
+        btnClear.setMargin(new Insets(4, 10, 4, 10));
         btnClear.setToolTipText("Xoa lua chon");
         btnClear.addActionListener(e -> {
             if (!combo.isEnabled()) return;

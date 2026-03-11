@@ -27,6 +27,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 /**
  * Dashboard tổng quan theo phong cách doanh nghiệp:
@@ -96,7 +97,7 @@ public class DashboardPanel extends JPanel {
         lblYear.setForeground(Color.WHITE);
         headerRight.add(lblYear);
         headerRight.add(txtYearFilter);
-        JButton btnRefresh = new JButton("Làm mới");
+        JButton btnRefresh = ButtonStyles.createPrimaryButton("Làm mới");
         btnRefresh.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
         btnRefresh.addActionListener(e -> {
             Integer year = null;

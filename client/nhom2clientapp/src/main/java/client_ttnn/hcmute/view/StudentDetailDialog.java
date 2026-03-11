@@ -16,6 +16,7 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import client_ttnn.hcmute.util.ButtonStyles;
 
 /**
  * Dialog hiển thị chi tiết thông tin học viên và danh sách các lớp học đã/đang tham gia
@@ -97,12 +98,8 @@ public class StudentDetailDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 10));
         buttonPanel.setBackground(new Color(245, 247, 250));
         
-        JButton btnClose = new JButton("Đóng");
+        JButton btnClose = ButtonStyles.createNeutralButton("Đóng");
         btnClose.setPreferredSize(new Dimension(100, 35));
-        btnClose.setBackground(new Color(52, 73, 94));
-        btnClose.setForeground(Color.WHITE);
-        btnClose.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        btnClose.setFocusPainted(false);
         btnClose.addActionListener(e -> dispose());
         buttonPanel.add(btnClose);
 
