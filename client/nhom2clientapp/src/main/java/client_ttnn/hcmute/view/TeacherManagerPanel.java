@@ -55,7 +55,6 @@ public class TeacherManagerPanel extends JPanel {
         btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSearch.addActionListener(e -> searchTeachers());
         toolbarPanel.add(btnSearch);
-        Dimension refButtonSize = btnSearch.getPreferredSize();
         
         toolbarPanel.add(Box.createRigidArea(new Dimension(15, 0)));
         chkOnlyActive = new JCheckBox("✓ Chỉ Giảng viên Active");

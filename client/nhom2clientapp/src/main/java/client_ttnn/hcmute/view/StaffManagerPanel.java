@@ -57,7 +57,6 @@ public class StaffManagerPanel extends JPanel {
         btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnSearch.addActionListener(e -> searchStaffByName());
         toolbarPanel.add(btnSearch);
-        Dimension refButtonSize = btnSearch.getPreferredSize();
 
         toolbarPanel.add(Box.createRigidArea(new Dimension(15, 0)));
         JLabel lblRole = new JLabel("Chức vụ:");

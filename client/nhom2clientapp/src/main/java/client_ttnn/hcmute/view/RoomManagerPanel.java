@@ -57,7 +57,6 @@ public class RoomManagerPanel extends JPanel {
         btnFilterCapacity.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnFilterCapacity.addActionListener(e -> filterRoomsByCapacity());
         toolbarPanel.add(btnFilterCapacity);
-        Dimension refButtonSize = btnFilterCapacity.getPreferredSize();
 
         toolbarPanel.add(Box.createRigidArea(new Dimension(15, 0)));
         JLabel lblStatus = new JLabel("Trạng thái:");
