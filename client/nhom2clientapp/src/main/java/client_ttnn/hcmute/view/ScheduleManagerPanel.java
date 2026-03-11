@@ -5,26 +5,36 @@ import client_ttnn.hcmute.model.Schedule;
 import client_ttnn.hcmute.model.Teacher;
 import client_ttnn.hcmute.model.Classes;
 import client_ttnn.hcmute.service.ScheduleApiService;
+import client_ttnn.hcmute.util.CacheManager;
+import client_ttnn.hcmute.util.TableCustomizer;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-
+import client_ttnn.hcmute.dto.BatchScheduleRequest;
 public class ScheduleManagerPanel extends JPanel {
     private final ScheduleApiService apiService;
+    private final CacheManager cacheManager;
     
     private JTable scheduleTable;
     private DefaultTableModel tableModel;
     
     // Form fields
     private JComboBox<ClassItem> cmbClass;
-    private JTextField txtDate; // YYYY-MM-DD
-    private JTextField txtStartTime; // HH:MM
-    private JTextField txtEndTime; // HH:MM
+    private JTextField txtDate; // YYYY-MM-DD (Hoặc StartDate)
+    private JTextField txtEndDate; // YYYY-MM-DD
+    private JComboBox<String> cmbStartTime;
+    private JComboBox<String> cmbEndTime;
+    
+    // Batch Mode Components
+    private JCheckBox chkBatchMode;
+    private JCheckBox[] chkDays;
+    private JPanel daysPanel;
+    private JLabel lblDateLabel;
+    private JLabel lblEndDate;
     private JComboBox<RoomItem> cmbRoom;
     private JLabel lblTeacherInfo;
     
@@ -35,13 +45,75 @@ public class ScheduleManagerPanel extends JPanel {
 
     public ScheduleManagerPanel() {
         apiService = new ScheduleApiService();
+        cacheManager = CacheManager.getInstance();
         initComponents();
-        loadClasses();
-        loadSchedules();
+        loadDataAsync();
+    }
+
+    private void loadDataAsync() {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            private List<Classes> classes;
+            private List<Schedule> schedules;
+            private Exception error;
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                try {
+                    classes = cacheManager.getClasses();
+                    schedules = apiService.getAllSchedules();
+                } catch (Exception e) {
+                    error = e;
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                if (error != null) {
+                    JOptionPane.showMessageDialog(ScheduleManagerPanel.this, "Lỗi tải dữ liệu: " + error.getMessage());
+                    return;
+                }
+                
+                // Update Classes Combo
+                cmbClass.removeAllItems();
+                if (classes != null) {
+                    for (Classes c : classes) {
+                        cmbClass.addItem(new ClassItem(c));
+                    }
+                }
+                
+                // Update Schedule Table
+                tableModel.setRowCount(0);
+                if (schedules != null) {
+                    for (Schedule s : schedules) {
+                        String className = s.getClassEntity() != null ? s.getClassEntity().getClassName() : "N/A";
+                        String teacherName = (s.getClassEntity() != null && s.getClassEntity().getTeacher() != null) 
+                                                ? s.getClassEntity().getTeacher().getFullName() : "N/A";
+                        String roomName = s.getRoom() != null ? s.getRoom().getRoomName() : "N/A";
+                        
+                        Object[] row = {
+                            s.getScheduleId(),
+                            className,
+                            teacherName,
+                            roomName,
+                            s.getDate(),
+                            s.getStartTime(),
+                            s.getEndTime()
+                        };
+                        tableModel.addRow(row);
+                    }
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void initComponents() {
         setLayout(new BorderLayout(10, 10));
+        setBackground(Color.WHITE); // Add this to ensure base panel is white
 
         // Bảng dữ liệu chính
         String[] columns = {"ID", "Lớp Học", "Giảng viên", "Phòng", "Ngày", "Bắt đầu", "Kết thúc"};
@@ -50,8 +122,9 @@ public class ScheduleManagerPanel extends JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         scheduleTable = new JTable(tableModel);
-        scheduleTable.setRowHeight(30);
-        scheduleTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(scheduleTable);
         
         scheduleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         scheduleTable.getSelectionModel().addListSelectionListener(e -> {
@@ -69,19 +142,57 @@ public class ScheduleManagerPanel extends JPanel {
 
         // Bên trái là form Xếp lịch với logic khó
         JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBorder(BorderFactory.createTitledBorder("Xếp Lịch Học Mới (Stream API check trùng)"));
+        formPanel.setBackground(Color.WHITE); // Loại bỏ màu nền xám mặc định
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)), "Xếp Lịch Học Mới"),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15) // Thêm Padding đẹp hơn
+        ));
+        formPanel.setPreferredSize(new Dimension(450, 0)); // Ép độ rộng Form tối thiểu để không bị bảng lấn
+
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 8, 8, 8); // Tăng khoảng cách các dòng
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.weightx = 1.0;
 
         cmbClass = new JComboBox<>();
-        txtDate = new JTextField(15);
+        
+        lblDateLabel = new JLabel("Ngày học (YYYY-MM-DD):");
+        txtDate = new JTextField(10);
         txtDate.setToolTipText("YYYY-MM-DD");
         txtDate.setText(LocalDate.now().toString());
-        txtStartTime = new JTextField(15);
-        txtStartTime.setToolTipText("HH:MM");
-        txtEndTime = new JTextField(15);
-        txtEndTime.setToolTipText("HH:MM");
+        
+        lblEndDate = new JLabel("Đến ngày (YYYY-MM-DD):");
+        txtEndDate = new JTextField(10);
+        txtEndDate.setToolTipText("YYYY-MM-DD");
+        txtEndDate.setText(LocalDate.now().plusMonths(1).toString());
+        
+        // --- COMBOBOX THỜI GIAN ---
+        String[] timeOptions = {
+            "07:00", "07:30", "08:00", "08:30", "09:00", "09:30", "10:00", "10:30", 
+            "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", 
+            "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", 
+            "19:00", "19:30", "20:00", "20:30", "21:00", "21:30"
+        };
+        cmbStartTime = new JComboBox<>(timeOptions);
+        cmbStartTime.setSelectedItem("15:30");
+        cmbEndTime = new JComboBox<>(timeOptions);
+        cmbEndTime.setSelectedItem("18:00");
+        
+        // --- BATCH MODE UI ---
+        chkBatchMode = new JCheckBox("Tạo lịch hàng loạt");
+        chkBatchMode.setBackground(Color.WHITE);
+        chkBatchMode.addActionListener(e -> toggleBatchMode());
+        
+        daysPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+        daysPanel.setBackground(Color.WHITE);
+        String[] dayNames = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
+        chkDays = new JCheckBox[7];
+        for (int i = 0; i < 7; i++) {
+            chkDays[i] = new JCheckBox(dayNames[i]);
+            chkDays[i].setBackground(Color.WHITE);
+            daysPanel.add(chkDays[i]);
+        }
         
         cmbRoom = new JComboBox<>();
         cmbRoom.setEnabled(false); // Disable ban đầu, đợi bấm nút Check
@@ -99,18 +210,33 @@ public class ScheduleManagerPanel extends JPanel {
         formPanel.add(lblTeacherInfo, gbc);
         rowCount++;
         
+        gbc.gridx = 0; gbc.gridy = rowCount;
+        gbc.gridwidth = 2;
+        formPanel.add(chkBatchMode, gbc);
+        rowCount++;
+        
         gbc.gridwidth = 1;
         gbc.gridx = 0; gbc.gridy = rowCount++;
-        formPanel.add(new JLabel("Ngày học (YYYY-MM-DD):"), gbc);
+        formPanel.add(lblDateLabel, gbc);
         gbc.gridx = 1; formPanel.add(txtDate, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = rowCount++;
+        formPanel.add(lblEndDate, gbc);
+        gbc.gridx = 1; formPanel.add(txtEndDate, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = rowCount;
+        gbc.gridwidth = 2;
+        formPanel.add(daysPanel, gbc);
+        rowCount++;
+
+        gbc.gridwidth = 1;
+        gbc.gridx = 0; gbc.gridy = rowCount++;
+        formPanel.add(new JLabel("Giờ Bắt đầu:"), gbc);
+        gbc.gridx = 1; formPanel.add(cmbStartTime, gbc);
 
         gbc.gridx = 0; gbc.gridy = rowCount++;
-        formPanel.add(new JLabel("Giờ Bắt đầu (HH:mm):"), gbc);
-        gbc.gridx = 1; formPanel.add(txtStartTime, gbc);
-
-        gbc.gridx = 0; gbc.gridy = rowCount++;
-        formPanel.add(new JLabel("Giờ Kết thúc (HH:mm):"), gbc);
-        gbc.gridx = 1; formPanel.add(txtEndTime, gbc);
+        formPanel.add(new JLabel("Giờ Kết thúc:"), gbc);
+        gbc.gridx = 1; formPanel.add(cmbEndTime, gbc);
 
         // NÚT CHECK DÙNG STREAM API
         btnCheckAvailable = new JButton("1. Kiểm tra Phòng trống / GV Rảnh");
@@ -130,13 +256,14 @@ public class ScheduleManagerPanel extends JPanel {
 
         // Buttons hành động
         JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        buttonPanel.setBackground(Color.WHITE);
         JButton btnAdd = new JButton("2. Thêm Lịch");
         btnAdd.addActionListener(e -> createSchedule());
         JButton btnDelete = new JButton("Xóa lầm");
         btnDelete.addActionListener(e -> deleteSchedule());
         JButton btnClear = new JButton("Refresh");
         btnClear.addActionListener(e -> {
-            loadSchedules();
+            loadDataAsync();
             clearForm();
         });
 
@@ -144,67 +271,42 @@ public class ScheduleManagerPanel extends JPanel {
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnClear);
 
-        gbc.gridx = 0; gbc.gridy = rowCount;
+        gbc.gridx = 0; gbc.gridy = rowCount++;
         gbc.gridwidth = 2;
         formPanel.add(buttonPanel, gbc);
 
+        // Khoảng trắng đẩy form lên trên cùng cho đẹp, không dồn cục giữa màn hình
+        gbc.gridx = 0; gbc.gridy = rowCount++;
+        gbc.weighty = 1.0; // Push everything up
+        formPanel.add(Box.createVerticalGlue(), gbc);
+
         add(formPanel, BorderLayout.WEST);
+        
+        // Thiết lập UI ban đầu
+        toggleBatchMode();
+    }
+    
+    private void toggleBatchMode() {
+        boolean isBatch = chkBatchMode.isSelected();
+        lblDateLabel.setText(isBatch ? "Từ ngày (YYYY-MM-DD):" : "Ngày học (YYYY-MM-DD):");
+        lblEndDate.setVisible(isBatch);
+        txtEndDate.setVisible(isBatch);
+        daysPanel.setVisible(isBatch);
     }
 
-    private void loadClasses() {
-        try {
-            // Fake Data để test Module Schedule vì TV1 phụ trách View chưa làm màn hình Quản lý Lớp API
-            List<Classes> classes = List.of(
-                new Classes("Lớp Mock IELTS 6.5", null, new Teacher(2, "Nguyen Van B", "091","y@gmail.com", "IELTS", "2023", "Active"), null, "2026-03-01", "2026-06-01", 15, "Ongoing")
-            );
-            cmbClass.removeAllItems();
-            if (classes != null) {
-                for (Classes c : classes) {
-                    cmbClass.addItem(new ClassItem(c));
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadSchedules() {
-        try {
-            List<Schedule> list = apiService.getAllSchedules();
-            tableModel.setRowCount(0);
-            for (Schedule s : list) {
-                String className = s.getClassEntity() != null ? s.getClassEntity().getClassName() : "N/A";
-                String teacherName = (s.getClassEntity() != null && s.getClassEntity().getTeacher() != null) 
-                                        ? s.getClassEntity().getTeacher().getFullName() : "N/A";
-                String roomName = s.getRoom() != null ? s.getRoom().getRoomName() : "N/A";
-                
-                Object[] row = {
-                    s.getScheduleId(),
-                    className,
-                    teacherName,
-                    roomName,
-                    s.getDate(),
-                    s.getStartTime(),
-                    s.getEndTime()
-                };
-                tableModel.addRow(row);
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi tải Lịch: " + e.getMessage());
-        }
-    }
+    // Các hàm loadClasses() và loadSchedules() đồng bộ cũ đã được gộp chung vào loadDataAsync() dùng SwingWorker phía trên.
     
     /**
      * LOGIC KIỂM TRA PHÒNG/GV BẰNG STREAM API TỪ BACKEND
      */
     private void checkAvailability() {
         String date = txtDate.getText().trim();
-        String start = txtStartTime.getText().trim() + ":00"; // Thêm giây cho đùng format Time
-        String end = txtEndTime.getText().trim() + ":00";
+        String start = cmbStartTime.getSelectedItem().toString() + ":00";
+        String end = cmbEndTime.getSelectedItem().toString() + ":00";
         ClassItem selectedClassItem = (ClassItem) cmbClass.getSelectedItem();
         
-        if (date.isEmpty() || txtStartTime.getText().isEmpty() || txtEndTime.getText().isEmpty() || selectedClassItem == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn đủ Lớp, Ngày, Giờ Bắt đầu và Giờ Kết thúc!");
+        if (date.isEmpty() || selectedClassItem == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn đủ Lớp và Ngày!");
             return;
         }
         
@@ -258,6 +360,58 @@ public class ScheduleManagerPanel extends JPanel {
             return;
         }
         
+        if (chkBatchMode.isSelected()) {
+            createBatchScheduleLogic();
+        } else {
+            createSingleScheduleLogic();
+        }
+    }
+    
+    private void createBatchScheduleLogic() {
+        try {
+            BatchScheduleRequest req = new BatchScheduleRequest();
+            ClassItem clsItem = (ClassItem) cmbClass.getSelectedItem();
+            req.setClassId(Long.valueOf(clsItem.getCls().getClassId()));
+            
+            RoomItem roomItem = (RoomItem) cmbRoom.getSelectedItem();
+            req.setRoomId(Long.valueOf(roomItem.getRoom().getRoomId()));
+            
+            req.setStartDate(txtDate.getText().trim());
+            req.setEndDate(txtEndDate.getText().trim());
+            req.setStartTime(cmbStartTime.getSelectedItem().toString() + ":00");
+            req.setEndTime(cmbEndTime.getSelectedItem().toString() + ":00");
+            
+            List<Integer> selectedDays = new ArrayList<>();
+            for (int i = 0; i < 7; i++) {
+                if (chkDays[i].isSelected()) {
+                    selectedDays.add(i + 1); // 1=Mon, 7=Sun
+                }
+            }
+            if (selectedDays.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn ít nhất 1 Thứ trong tuần!");
+                return;
+            }
+            req.setDaysOfWeek(selectedDays);
+            
+            int count = apiService.createBatchSchedules(req);
+            if(count > 0) {
+                JOptionPane.showMessageDialog(this, "Tạo hàng loạt thành công Sinh ra " + count + " buổi học. Các ngày đụng lịch đã bị bỏ qua an toàn.");
+                clearForm();
+                loadDataAsync();
+            } else {
+                JOptionPane.showMessageDialog(this, "Thêm thất bại hoặc không có ngày nào trống để xếp. Vui lòng kiểm tra lại khung giờ!");
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi xử lý hàng loạt: " + e.getMessage());
+        }
+    }
+
+    private void createSingleScheduleLogic() {
+        if (!cmbRoom.isEnabled() || cmbRoom.getItemCount() == 0) {
+            JOptionPane.showMessageDialog(this, "Bạn cần qua bước (1. Kiểm tra phòng trống) trước khi Thêm lịch!");
+            return;
+        }
+        
         try {
             Schedule schedule = new Schedule();
             ClassItem clsItem = (ClassItem) cmbClass.getSelectedItem();
@@ -273,14 +427,14 @@ public class ScheduleManagerPanel extends JPanel {
             schedule.setRoom(r);
             
             schedule.setDate(txtDate.getText().trim());
-            schedule.setStartTime(txtStartTime.getText().trim() + ":00");
-            schedule.setEndTime(txtEndTime.getText().trim() + ":00");
+            schedule.setStartTime(cmbStartTime.getSelectedItem().toString() + ":00");
+            schedule.setEndTime(cmbEndTime.getSelectedItem().toString() + ":00");
             
-            Schedule created = apiService.createSchedule(schedule);
-            if(created != null) {
+            boolean created = apiService.createSchedule(schedule) != null;
+            if(created) {
                 JOptionPane.showMessageDialog(this, "Xếp lịch thành công!");
                 clearForm();
-                loadSchedules();
+                loadDataAsync();
             } else {
                 JOptionPane.showMessageDialog(this, "Thêm thất bại do lỗi Backend. Kiểm tra console log.");
             }
@@ -305,7 +459,7 @@ public class ScheduleManagerPanel extends JPanel {
         if (confirm == JOptionPane.YES_OPTION) {
             try {
                 apiService.deleteSchedule(selectedScheduleId);
-                loadSchedules();
+                loadDataAsync();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, e.getMessage());
             }

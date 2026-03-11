@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Collections;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
 
 public class PaymentManagerPanel extends JPanel {
     private final PaymentApiService apiService;
@@ -50,13 +51,11 @@ public class PaymentManagerPanel extends JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         tblPayment = new JTable(tableModel);
-        tblPayment.setRowHeight(32);
-        tblPayment.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        tblPayment.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        tblPayment.getTableHeader().setBackground(new Color(245, 245, 245));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(tblPayment);
+        
         tblPayment.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tblPayment.setShowGrid(true);
-        tblPayment.setGridColor(new Color(220, 220, 220));
         tblPayment.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) updateSelectionState();
         });

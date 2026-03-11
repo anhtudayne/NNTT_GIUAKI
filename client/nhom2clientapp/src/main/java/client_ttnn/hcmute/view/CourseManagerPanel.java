@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
 
 public class CourseManagerPanel extends JPanel {
 
@@ -53,13 +54,11 @@ public class CourseManagerPanel extends JPanel {
             }
         };
         courseTable = new JTable(tableModel);
-        courseTable.setRowHeight(32);
-        courseTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        courseTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        courseTable.getTableHeader().setBackground(new Color(245, 245, 245));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(courseTable);
+        
         courseTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        courseTable.setShowGrid(true);
-        courseTable.setGridColor(new Color(220, 220, 220));
 
         courseTable.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
@@ -168,16 +167,29 @@ public class CourseManagerPanel extends JPanel {
     }
 
     private void loadCourses() {
-        try {
-            List<Course> list = apiService.getAllCourses();
-            updateTable(list);
-            selectedCourseId = null;
-            btnEdit.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        SwingWorker<List<Course>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Course> doInBackground() throws Exception {
+                // Fetch direct from API for the latest list
+                return apiService.getAllCourses();
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    List<Course> list = get();
+                    updateTable(list);
+                    selectedCourseId = null;
+                    btnEdit.setEnabled(false);
+                    btnDelete.setEnabled(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(CourseManagerPanel.this, "Lỗi khi tải danh sách: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void searchCourses() {
@@ -186,16 +198,28 @@ public class CourseManagerPanel extends JPanel {
             loadCourses();
             return;
         }
-        try {
-            List<Course> list = apiService.searchByName(searchText);
-            updateTable(list);
-            selectedCourseId = null;
-            btnEdit.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tìm kiếm: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        SwingWorker<List<Course>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Course> doInBackground() throws Exception {
+                return apiService.searchByName(searchText);
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    List<Course> list = get();
+                    updateTable(list);
+                    selectedCourseId = null;
+                    btnEdit.setEnabled(false);
+                    btnDelete.setEnabled(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(CourseManagerPanel.this, "Lỗi khi tìm kiếm: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void updateTable(List<Course> courses) {

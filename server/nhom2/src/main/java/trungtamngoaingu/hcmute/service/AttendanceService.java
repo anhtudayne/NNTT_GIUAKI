@@ -53,6 +53,14 @@ public class AttendanceService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    // LẤY DANH SÁCH ĐIỂM DANH CỦA 1 LỚP TRONG 1 NGÀY BẰNG STREAM API
+    public List<Attendance> getAttendancesByClassIdAndDate(Integer classId, String date) {
+        return attendanceRepository.myGetAll().stream()
+                .filter(a -> a.getClassEntity() != null && a.getClassEntity().getClassId().equals(classId))
+                .filter(a -> a.getDate() != null && a.getDate().equals(date))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     // LƯU HÀNG LOẠT (BATCH SAVE) DANH SÁCH ĐIỂM DANH
     public List<Attendance> saveBatchAttendances(List<Attendance> attendances) {
         // Dùng Stream kiểm qua xem có record rỗng không trước khi lưu

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import trungtamngoaingu.hcmute.entity.Schedule;
 import trungtamngoaingu.hcmute.service.ScheduleService;
+import trungtamngoaingu.hcmute.dto.BatchScheduleRequest;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,6 +32,17 @@ public class ScheduleController {
     public ResponseEntity<Schedule> createSchedule(@RequestBody Schedule schedule) {
         Schedule saved = scheduleService.createSchedule(schedule);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+    }
+
+    @PostMapping("/batch")
+    public ResponseEntity<Integer> createBatchSchedules(@RequestBody BatchScheduleRequest request) {
+        try {
+            int count = scheduleService.createBatchSchedules(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(count);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @PutMapping("/{id}")

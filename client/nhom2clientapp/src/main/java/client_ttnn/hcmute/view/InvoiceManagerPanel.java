@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Collections;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
 
 public class InvoiceManagerPanel extends JPanel {
     private final InvoiceApiService apiService;
@@ -52,13 +53,11 @@ public class InvoiceManagerPanel extends JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         tblInvoice = new JTable(tableModel);
-        tblInvoice.setRowHeight(32);
-        tblInvoice.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        tblInvoice.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        tblInvoice.getTableHeader().setBackground(new Color(245, 245, 245));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(tblInvoice);
+        
         tblInvoice.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tblInvoice.setShowGrid(true);
-        tblInvoice.setGridColor(new Color(220, 220, 220));
         tblInvoice.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) updateSelectionState();
         });

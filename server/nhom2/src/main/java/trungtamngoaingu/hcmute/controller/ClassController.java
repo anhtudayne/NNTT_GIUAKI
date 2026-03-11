@@ -53,4 +53,10 @@ public class ClassController {
         List<Class> classes = classService.searchClassesByName(name);
         return ResponseEntity.ok(classes);
     }
+
+    @GetMapping("/teacher/{teacherId}")
+    public ResponseEntity<List<Class>> getClassesByTeacherId(@PathVariable Integer teacherId) {
+        List<Class> classes = classService.getClassesByTeacherId(teacherId);
+        return ResponseEntity.ok(classes);
+    }
 }

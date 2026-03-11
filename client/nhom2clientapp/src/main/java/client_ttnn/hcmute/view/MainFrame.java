@@ -57,9 +57,8 @@ public class MainFrame extends JFrame {
         RoomManagerPanel roomPanel = new RoomManagerPanel(); // PHÒNG HỌC
         ScheduleManagerPanel schedulePanel = new ScheduleManagerPanel(); // LỊCH HỌC
         TimetableViewPanel timetablePanel = new TimetableViewPanel(); // XEM TKB
-        AttendanceManagerPanel attendancePanel = new AttendanceManagerPanel(); // ĐIỂM DANH LỚP
-        CourseManagerPanel coursePanel = new CourseManagerPanel();
-        ClassManagerPanel classPanel = new ClassManagerPanel();
+        AttendanceManagerPanel attendancePanel = new AttendanceManagerPanel(this.currentUser); // ĐIỂM DANH LỚP
+        EducationManagerPanel educationPanel = new EducationManagerPanel(); // Gộp: Lớp học, Khóa học
         EnrollmentManagerPanel enrollmentPanel = new EnrollmentManagerPanel();
         PlacementTestManagerPanel placementTestPanel = new PlacementTestManagerPanel();
         CertificateManagerPanel certificatePanel = new CertificateManagerPanel();
@@ -74,8 +73,7 @@ public class MainFrame extends JFrame {
         contentPanel.add(schedulePanel, "SchedulePanel");
         contentPanel.add(timetablePanel, "TimetablePanel");
         contentPanel.add(attendancePanel, "AttendancePanel");
-        contentPanel.add(coursePanel, "CoursePanel");
-        contentPanel.add(classPanel, "ClassPanel");
+        contentPanel.add(educationPanel, "EducationPanel");
         contentPanel.add(enrollmentPanel, "EnrollmentPanel");
         contentPanel.add(placementTestPanel, "PlacementTestPanel");
         contentPanel.add(certificatePanel, "CertificatePanel");
@@ -91,8 +89,7 @@ public class MainFrame extends JFrame {
         JButton btnSchedule = createMenuButton("Xếp Lịch Học"); // LỊCH HỌC
         JButton btnTimetable = createMenuButton("Xem Thời Khoá Biểu"); // XEM TKB
         JButton btnAttendance = createMenuButton("Điểm Danh Lớp"); // ĐIỂM DANH LỚP
-        JButton btnCourse = createMenuButton("Quản Lý Khóa Học");
-        JButton btnClass = createMenuButton("Quản Lý Lớp Học");
+        JButton btnEducation = createMenuButton("Khóa học & Lớp học"); // ĐÀO TẠO
         JButton btnEnrollment = createMenuButton("Quản Lý Ghi Danh");
         JButton btnPlacementTest = createMenuButton("Quản Lý Placement Test");
         JButton btnCertificate = createMenuButton("Quản Lý Chứng Chỉ");
@@ -117,7 +114,7 @@ public class MainFrame extends JFrame {
         JButton[] resourceTabButtons = {btnStudent, btnTeacher, btnStaff, btnRoom};
         JButton[] navigationButtons = {
             btnDashboard, btnStudent, btnTeacher, btnStaff, btnRoom,
-            btnSchedule, btnTimetable, btnAttendance, btnCourse, btnClass,
+            btnSchedule, btnTimetable, btnAttendance, btnEducation,
             btnEnrollment, btnPlacementTest, btnCertificate, btnFinance
         };
 
@@ -154,13 +151,9 @@ public class MainFrame extends JFrame {
             cardLayout.show(contentPanel, "AttendancePanel");
             setActiveMenuButton(btnAttendance, navigationButtons, resourceTabButtons);
         });
-        btnCourse.addActionListener(e -> {
-            cardLayout.show(contentPanel, "CoursePanel");
-            setActiveMenuButton(btnCourse, navigationButtons, resourceTabButtons);
-        });
-        btnClass.addActionListener(e -> {
-            cardLayout.show(contentPanel, "ClassPanel");
-            setActiveMenuButton(btnClass, navigationButtons, resourceTabButtons);
+        btnEducation.addActionListener(e -> {
+            cardLayout.show(contentPanel, "EducationPanel");
+            setActiveMenuButton(btnEducation, navigationButtons, resourceTabButtons);
         });
         btnEnrollment.addActionListener(e -> {
             cardLayout.show(contentPanel, "EnrollmentPanel");
@@ -213,9 +206,7 @@ public class MainFrame extends JFrame {
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnAttendance); // ĐIỂM DANH LỚP
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        sidebarPanel.add(btnCourse);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        sidebarPanel.add(btnClass);
+        sidebarPanel.add(btnEducation);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
         sidebarPanel.add(btnEnrollment);
         sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
@@ -235,8 +226,7 @@ public class MainFrame extends JFrame {
             btnTeacher.setVisible(false);
             btnStaff.setVisible(false);
             btnRoom.setVisible(false);
-            btnCourse.setVisible(false);
-            btnClass.setVisible(false);
+            btnEducation.setVisible(false);
             btnEnrollment.setVisible(false);
             btnPlacementTest.setVisible(false);
             btnCertificate.setVisible(false);

@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Collections;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
 
 public class EnrollmentManagerPanel extends JPanel {
     private final EnrollmentApiService apiService;
@@ -50,13 +51,11 @@ public class EnrollmentManagerPanel extends JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         enrollmentTable = new JTable(tableModel);
-        enrollmentTable.setRowHeight(32);
-        enrollmentTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        enrollmentTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        enrollmentTable.getTableHeader().setBackground(new Color(245, 245, 245));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(enrollmentTable);
+        
         enrollmentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        enrollmentTable.setShowGrid(true);
-        enrollmentTable.setGridColor(new Color(220, 220, 220));
         enrollmentTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) updateSelectionState();
         });

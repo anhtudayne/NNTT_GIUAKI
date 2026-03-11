@@ -5,15 +5,17 @@ public class UserAccount {
     private String username;
     private String password; // Client có thể bỏ trống cũng được
     private String role;
+    private Integer relatedId;
 
     public UserAccount() {
     }
 
-    public UserAccount(Integer accountId, String username, String password, String role) {
+    public UserAccount(Integer accountId, String username, String password, String role, Integer relatedId) {
         this.accountId = accountId;
         this.username = username;
         this.password = password;
         this.role = role;
+        this.relatedId = relatedId;
     }
 
     public Integer getAccountId() {
@@ -46,5 +48,13 @@ public class UserAccount {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Integer getRelatedId() {
+        return relatedId;
+    }
+
+    public void setRelatedId(Integer relatedId) {
+        this.relatedId = relatedId;
     }
 }

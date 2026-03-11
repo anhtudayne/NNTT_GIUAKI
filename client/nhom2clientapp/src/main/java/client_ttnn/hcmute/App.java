@@ -12,13 +12,21 @@ public class App {
             e.printStackTrace();
         }
 
-        // Đảm bảo tạo UI trong Thread an toàn của Swing
-        // SwingUtilities.invokeLater(() -> {
-        //     client_ttnn.hcmute.view.LoginFrame loginFrame = new client_ttnn.hcmute.view.LoginFrame();
-        //     loginFrame.setVisible(true);
-        // });
+        // Tải trước dữ liệu tĩnh ngầm (Cache Pre-fetching)
+        client_ttnn.hcmute.util.CacheManager.getInstance().prefetchDataAsync();
 
-        client_ttnn.hcmute.view.MainFrame mainFrame = new client_ttnn.hcmute.view.MainFrame(null);
-        mainFrame.setVisible(true);
+        // Đảm bảo tạo UI trong Thread an toàn của Swing
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            // Tạm thời TẮT Đăng nhập, mở thẳng MainFrame với quyền Admin để test nhanh
+            client_ttnn.hcmute.model.UserAccount mockAdmin = new client_ttnn.hcmute.model.UserAccount();
+            mockAdmin.setRole("Admin");
+            mockAdmin.setRelatedId(1);
+            
+            client_ttnn.hcmute.view.MainFrame mainFrame = new client_ttnn.hcmute.view.MainFrame(mockAdmin);
+            mainFrame.setVisible(true);
+            
+            // client_ttnn.hcmute.view.LoginFrame loginFrame = new client_ttnn.hcmute.view.LoginFrame();
+            // loginFrame.setVisible(true);
+        });
     }
 }

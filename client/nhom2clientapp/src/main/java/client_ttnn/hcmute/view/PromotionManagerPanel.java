@@ -9,6 +9,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Collections;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
 
 public class PromotionManagerPanel extends JPanel {
 
@@ -62,13 +63,11 @@ public class PromotionManagerPanel extends JPanel {
             }
         };
         promotionTable = new JTable(tableModel);
-        promotionTable.setRowHeight(32);
-        promotionTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        promotionTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        promotionTable.getTableHeader().setBackground(new Color(245, 245, 245));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(promotionTable);
+        
         promotionTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        promotionTable.setShowGrid(true);
-        promotionTable.setGridColor(new Color(220, 220, 220));
 
         promotionTable.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;

@@ -8,6 +8,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import client_ttnn.hcmute.util.TableCustomizer;
 
 public class RoomManagerPanel extends JPanel {
 
@@ -31,50 +32,24 @@ public class RoomManagerPanel extends JPanel {
 
     private void initComponents() {
         JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        toolbarPanel.setBackground(new Color(236, 240, 241));
-        toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(22, 160, 133)),
-            new EmptyBorder(10, 10, 10, 10)
-        ));
+        toolbarPanel.setBackground(Color.WHITE);
         
-        JLabel lblCapacity = new JLabel("🏢 Sức chứa tối thiểu:");
-        lblCapacity.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        toolbarPanel.add(lblCapacity);
+        toolbarPanel.add(new JLabel("Sức chứa tối thiểu:"));
         txtMinCapacity = new JTextField(8);
-        txtMinCapacity.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        txtMinCapacity.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
-            BorderFactory.createEmptyBorder(5, 8, 5, 8)
-        ));
         toolbarPanel.add(txtMinCapacity);
         
         JButton btnFilterCapacity = new JButton("Lọc Capacity");
-        btnFilterCapacity.setBackground(new Color(22, 160, 133));
-        btnFilterCapacity.setForeground(Color.WHITE);
-        btnFilterCapacity.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnFilterCapacity.setFocusPainted(false);
-        btnFilterCapacity.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnFilterCapacity.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnFilterCapacity.addActionListener(e -> filterRoomsByCapacity());
         toolbarPanel.add(btnFilterCapacity);
         Dimension refButtonSize = btnFilterCapacity.getPreferredSize();
 
-        toolbarPanel.add(Box.createRigidArea(new Dimension(15, 0)));
-        JLabel lblStatus = new JLabel("Trạng thái:");
-        lblStatus.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        toolbarPanel.add(lblStatus);
+        toolbarPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+        toolbarPanel.add(new JLabel("Trạng thái:"));
         cmbFilterStatus = new JComboBox<>(new String[]{"Tất cả", "Available", "Maintenance", "Inactive"});
-        cmbFilterStatus.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         cmbFilterStatus.addActionListener(e -> filterRoomsByStatus());
         toolbarPanel.add(cmbFilterStatus);
 
-        JButton btnRefresh = new JButton("⟳ Làm mới");
-        btnRefresh.setBackground(new Color(149, 165, 166));
-        btnRefresh.setForeground(Color.WHITE);
-        btnRefresh.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        btnRefresh.setFocusPainted(false);
-        btnRefresh.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        JButton btnRefresh = new JButton("Làm mới");
         btnRefresh.addActionListener(e -> {
             txtMinCapacity.setText("");
             cmbFilterStatus.setSelectedIndex(0);
@@ -92,18 +67,11 @@ public class RoomManagerPanel extends JPanel {
             }
         };
         roomTable = new JTable(tableModel);
-        roomTable.setRowHeight(36);
-        roomTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
-        roomTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        roomTable.getTableHeader().setBackground(new Color(52, 73, 94));
-        roomTable.getTableHeader().setForeground(Color.WHITE);
-        roomTable.getTableHeader().setBorder(BorderFactory.createEmptyBorder(10, 5, 10, 5));
+        
+        // Cải thiện phong cách hiển thị JTable bằng Helper Class
+        TableCustomizer.applyModernStyle(roomTable);
+        
         roomTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        roomTable.setSelectionBackground(new Color(130, 224, 170));
-        roomTable.setSelectionForeground(new Color(44, 62, 80));
-        roomTable.setShowGrid(true);
-        roomTable.setGridColor(new Color(220, 220, 220));
-        roomTable.setIntercellSpacing(new Dimension(1, 1));
 
         roomTable.getSelectionModel().addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) return;
@@ -121,40 +89,22 @@ public class RoomManagerPanel extends JPanel {
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
 
-        Dimension btnSize = new Dimension(130, 40);
-        JButton btnAdd = new JButton("➕ Thêm");
+        Dimension btnSize = new Dimension(refButtonSize.width + 20, refButtonSize.height);
+        JButton btnAdd = new JButton("Thêm");
         btnAdd.setPreferredSize(btnSize);
         btnAdd.setMinimumSize(btnSize);
-        btnAdd.setBackground(new Color(46, 204, 113));
-        btnAdd.setForeground(Color.WHITE);
-        btnAdd.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnAdd.setFocusPainted(false);
-        btnAdd.setBorderPainted(false);
-        btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnAdd.addActionListener(e -> openAddDialog());
 
-        btnEdit = new JButton("✏️ Xem/Sửa");
+        btnEdit = new JButton("Sửa");
         btnEdit.setPreferredSize(btnSize);
         btnEdit.setMinimumSize(btnSize);
         btnEdit.setEnabled(false);
-        btnEdit.setBackground(new Color(241, 196, 15));
-        btnEdit.setForeground(Color.WHITE);
-        btnEdit.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnEdit.setFocusPainted(false);
-        btnEdit.setBorderPainted(false);
-        btnEdit.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnEdit.addActionListener(e -> openEditDialog());
 
-        btnDelete = new JButton("🗑️ Xóa");
+        btnDelete = new JButton("Xóa");
         btnDelete.setPreferredSize(btnSize);
         btnDelete.setMinimumSize(btnSize);
         btnDelete.setEnabled(false);
-        btnDelete.setBackground(new Color(231, 76, 60));
-        btnDelete.setForeground(Color.WHITE);
-        btnDelete.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        btnDelete.setFocusPainted(false);
-        btnDelete.setBorderPainted(false);
-        btnDelete.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnDelete.addActionListener(e -> deleteRoom());
 
         bottomPanel.add(btnAdd);
