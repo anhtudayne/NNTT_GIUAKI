@@ -42,7 +42,6 @@ public class StaffManagerPanel extends JPanel {
         JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchStaffByName());
         toolbarPanel.add(btnSearch);
-        Dimension refButtonSize = btnSearch.getPreferredSize();
 
         toolbarPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         toolbarPanel.add(new JLabel("Chức vụ:"));
@@ -85,8 +84,6 @@ public class StaffManagerPanel extends JPanel {
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
-
-        Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
         JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
 

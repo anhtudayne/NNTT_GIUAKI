@@ -9,7 +9,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import client_ttnn.hcmute.util.ButtonStyles;
 
@@ -17,7 +17,7 @@ public class CertificateManagerPanel extends JPanel {
     private final CertificateApiService apiService;
     private JTable certificateTable;
     private DefaultTableModel tableModel;
-    private JTextField txtSearchId;
+    private JTextField txtSearchName;
     private JButton btnEdit, btnDelete;
     private Long selectedCertificateId = null;
 
@@ -32,15 +32,42 @@ public class CertificateManagerPanel extends JPanel {
 
     private void initComponents() {
         JPanel toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        toolbarPanel.setBackground(Color.WHITE);
-        toolbarPanel.add(new JLabel("Tìm theo Certificate ID:"));
-        txtSearchId = new JTextField(20);
-        toolbarPanel.add(txtSearchId);
-        JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
-        btnSearch.addActionListener(e -> searchById());
+        toolbarPanel.setBackground(new Color(236, 240, 241));
+        toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(52, 152, 219)),
+            new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        JLabel lblSearch = new JLabel("Tìm theo tên chứng chỉ:");
+        lblSearch.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        toolbarPanel.add(lblSearch);
+        txtSearchName = new JTextField(20);
+        txtSearchName.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
+        txtSearchName.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
+        toolbarPanel.add(txtSearchName);
+
+        JButton btnSearch = new JButton("Tìm kiếm");
+        btnSearch.setBackground(new Color(52, 152, 219));
+        btnSearch.setForeground(Color.WHITE);
+        btnSearch.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        btnSearch.setFocusPainted(false);
+        btnSearch.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        btnSearch.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnSearch.addActionListener(e -> searchByName());
         toolbarPanel.add(btnSearch);
-        Dimension refButtonSize = btnSearch.getPreferredSize();
-        JButton btnRefresh = ButtonStyles.createNeutralButton("Làm mới");
+
+        toolbarPanel.add(Box.createRigidArea(new Dimension(10, 0)));
+
+        JButton btnRefresh = new JButton("Làm mới");
+        btnRefresh.setBackground(new Color(149, 165, 166));
+        btnRefresh.setForeground(Color.WHITE);
+        btnRefresh.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        btnRefresh.setFocusPainted(false);
+        btnRefresh.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnRefresh.addActionListener(e -> loadCertificates());
         toolbarPanel.add(btnRefresh);
         add(toolbarPanel, BorderLayout.NORTH);
@@ -51,13 +78,17 @@ public class CertificateManagerPanel extends JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         certificateTable = new JTable(tableModel);
-        certificateTable.setRowHeight(32);
+        certificateTable.setRowHeight(36);
         certificateTable.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 13));
         certificateTable.getTableHeader().setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        certificateTable.getTableHeader().setBackground(new Color(245, 245, 245));
+        certificateTable.getTableHeader().setBackground(new Color(52, 73, 94));
+        certificateTable.getTableHeader().setForeground(Color.WHITE);
+        certificateTable.setSelectionBackground(new Color(174, 214, 241));
+        certificateTable.setSelectionForeground(new Color(44, 62, 80));
         certificateTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         certificateTable.setShowGrid(true);
         certificateTable.setGridColor(new Color(220, 220, 220));
+        certificateTable.setIntercellSpacing(new Dimension(1, 1));
         certificateTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) updateSelectionState();
         });
@@ -71,14 +102,41 @@ public class CertificateManagerPanel extends JPanel {
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
-        Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
-        JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
+        Dimension btnSize = new Dimension(130, 40);
+
+        JButton btnAdd = new JButton("Thêm");
+        btnAdd.setPreferredSize(btnSize);
+        btnAdd.setMinimumSize(btnSize);
+        btnAdd.setBackground(new Color(46, 204, 113));
+        btnAdd.setForeground(Color.WHITE);
+        btnAdd.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        btnAdd.setFocusPainted(false);
+        btnAdd.setBorderPainted(false);
+        btnAdd.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnAdd.addActionListener(e -> openAddDialog());
-        btnEdit = ButtonStyles.createNeutralButton("Sửa");
+
+        btnEdit = new JButton("Sửa");
+        btnEdit.setPreferredSize(btnSize);
+        btnEdit.setMinimumSize(btnSize);
         btnEdit.setEnabled(false);
+        btnEdit.setBackground(new Color(241, 196, 15));
+        btnEdit.setForeground(Color.WHITE);
+        btnEdit.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        btnEdit.setFocusPainted(false);
+        btnEdit.setBorderPainted(false);
+        btnEdit.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnEdit.addActionListener(e -> openEditDialog());
-        btnDelete = ButtonStyles.createDangerButton("Xóa");
+
+        btnDelete = new JButton("Xóa");
+        btnDelete.setPreferredSize(btnSize);
+        btnDelete.setMinimumSize(btnSize);
         btnDelete.setEnabled(false);
+        btnDelete.setBackground(new Color(231, 76, 60));
+        btnDelete.setForeground(Color.WHITE);
+        btnDelete.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        btnDelete.setFocusPainted(false);
+        btnDelete.setBorderPainted(false);
+        btnDelete.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnDelete.addActionListener(e -> deleteCertificate());
         bottomPanel.add(btnAdd);
         bottomPanel.add(btnEdit);
@@ -146,20 +204,28 @@ public class CertificateManagerPanel extends JPanel {
         }
     }
 
-    private void searchById() {
-        String idText = txtSearchId.getText().trim();
-        if (idText.isEmpty()) { loadCertificates(); return; }
+    private void searchByName() {
+        String nameText = txtSearchName.getText().trim();
+        if (nameText.isEmpty()) { loadCertificates(); return; }
         try {
-            Long id = Long.parseLong(idText);
-            Certificate c = apiService.getCertificateById(id);
-            updateTable(Collections.singletonList(c));
+            List<Certificate> allCertificates = apiService.getAllCertificates();
+            List<Certificate> filtered = new ArrayList<>();
+            String keyword = nameText.toLowerCase();
+            for (Certificate c : allCertificates) {
+                String certName = c != null ? str(c.getCertificateName()) : "";
+                if (certName.toLowerCase().contains(keyword)) {
+                    filtered.add(c);
+                }
+            }
+            updateTable(filtered);
             selectedCertificateId = null;
             btnEdit.setEnabled(false);
             btnDelete.setEnabled(false);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Certificate ID phải là số.", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
+            if (filtered.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy chứng chỉ phù hợp.", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Không tìm thấy: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Lỗi khi tìm kiếm: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
 

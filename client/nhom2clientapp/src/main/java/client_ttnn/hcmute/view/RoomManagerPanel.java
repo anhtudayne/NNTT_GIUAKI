@@ -42,7 +42,6 @@ public class RoomManagerPanel extends JPanel {
         JButton btnFilterCapacity = ButtonStyles.createPrimaryButton("Lọc Capacity");
         btnFilterCapacity.addActionListener(e -> filterRoomsByCapacity());
         toolbarPanel.add(btnFilterCapacity);
-        Dimension refButtonSize = btnFilterCapacity.getPreferredSize();
 
         toolbarPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         toolbarPanel.add(new JLabel("Trạng thái:"));
@@ -89,8 +88,6 @@ public class RoomManagerPanel extends JPanel {
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
-
-        Dimension btnSize = new Dimension(refButtonSize.width + 20, refButtonSize.height);
         JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
 

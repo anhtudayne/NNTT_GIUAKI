@@ -48,7 +48,6 @@ public class StudentManagerPanel extends JPanel {
         JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchStudents());
         toolbarPanel.add(btnSearch);
-        Dimension refButtonSize = btnSearch.getPreferredSize();
         
         toolbarPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         chkActiveOnly = new JCheckBox("Chỉ hiển thị Active");
@@ -94,8 +93,6 @@ public class StudentManagerPanel extends JPanel {
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
 
-        // Lấy kích thước nút "Tìm kiếm" làm chuẩn cho Thêm / Sửa / Xóa
-        Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
         JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
 

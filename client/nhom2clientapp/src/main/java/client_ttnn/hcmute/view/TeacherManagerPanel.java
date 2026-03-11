@@ -40,7 +40,6 @@ public class TeacherManagerPanel extends JPanel {
         JButton btnSearch = ButtonStyles.createPrimaryButton("Tìm");
         btnSearch.addActionListener(e -> searchTeachers());
         toolbarPanel.add(btnSearch);
-        Dimension refButtonSize = btnSearch.getPreferredSize();
         
         toolbarPanel.add(Box.createRigidArea(new Dimension(10, 0)));
         chkOnlyActive = new JCheckBox("Chỉ Giảng viên Active");
@@ -80,7 +79,6 @@ public class TeacherManagerPanel extends JPanel {
         bottomPanel.setBackground(Color.WHITE);
         bottomPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
         bottomPanel.setMinimumSize(new Dimension(400, 50));
-        Dimension btnSize = new Dimension(refButtonSize.width, refButtonSize.height);
         JButton btnAdd = ButtonStyles.createPrimaryButton("Thêm");
         btnAdd.addActionListener(e -> openAddDialog());
         
