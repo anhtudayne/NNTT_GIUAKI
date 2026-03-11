@@ -3,6 +3,7 @@ package client_ttnn.hcmute.view;
 import client_ttnn.hcmute.model.Invoice;
 import client_ttnn.hcmute.model.Student;
 import client_ttnn.hcmute.service.InvoiceApiService;
+import client_ttnn.hcmute.service.PaymentApiService;
 import client_ttnn.hcmute.service.PromotionApiService;
 
 import javax.swing.*;
@@ -14,6 +15,7 @@ import java.util.List;
 
 public class InvoiceManagerPanel extends JPanel {
     private final InvoiceApiService apiService;
+    private final PaymentApiService paymentApiService;
     private final PromotionApiService promotionService;
     private JTable tblInvoice;
     private DefaultTableModel tableModel;
@@ -23,6 +25,7 @@ public class InvoiceManagerPanel extends JPanel {
 
     public InvoiceManagerPanel() {
         apiService = new InvoiceApiService();
+        paymentApiService = new PaymentApiService();
         promotionService = new PromotionApiService();
         setLayout(new BorderLayout(10, 10));
         setBackground(Color.WHITE);
@@ -46,7 +49,7 @@ public class InvoiceManagerPanel extends JPanel {
         toolbarPanel.add(btnRefresh);
         add(toolbarPanel, BorderLayout.NORTH);
 
-        String[] columns = {"ID", "Student ID", "Student Name", "Total Amount", "Issue Date", "Status"};
+        String[] columns = {"ID", "Student ID", "Student Name", "Total Amount", "Issue Date", "Status", "Chi tiết"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) { return false; }
@@ -61,6 +64,14 @@ public class InvoiceManagerPanel extends JPanel {
         tblInvoice.setGridColor(new Color(220, 220, 220));
         tblInvoice.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) updateSelectionState();
+        });
+        tblInvoice.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int col = tblInvoice.columnAtPoint(e.getPoint());
+                int row = tblInvoice.rowAtPoint(e.getPoint());
+                if (row >= 0 && col == 6) openDetailDialog(row);
+            }
         });
         JScrollPane scrollPane = new JScrollPane(tblInvoice);
         scrollPane.setBorder(BorderFactory.createCompoundBorder(
@@ -153,6 +164,16 @@ public class InvoiceManagerPanel extends JPanel {
         }
     }
 
+    private void openDetailDialog(int row) {
+        Object idVal = tableModel.getValueAt(row, 0);
+        if (idVal == null) return;
+        Long id = ((Number) idVal).longValue();
+        InvoiceDetailDialog dlg = new InvoiceDetailDialog(
+                (Window) SwingUtilities.getWindowAncestor(this), id,
+                apiService, paymentApiService, this::loadInvoices);
+        dlg.setVisible(true);
+    }
+
     private void updateTable(List<Invoice> list) {
         tableModel.setRowCount(0);
         for (Invoice inv : list) {
@@ -163,7 +184,8 @@ public class InvoiceManagerPanel extends JPanel {
                     s != null ? s.getFullName() : "",
                     inv.getTotalAmount(),
                     inv.getIssueDate(),
-                    inv.getStatus()
+                    inv.getStatus(),
+                    "👁 Xem"
             });
         }
     }

@@ -3,8 +3,10 @@ package trungtamngoaingu.hcmute.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Invoice;
+import trungtamngoaingu.hcmute.entity.Payment;
 import trungtamngoaingu.hcmute.entity.Promotion;
 import trungtamngoaingu.hcmute.repository.InvoiceRepository;
+import trungtamngoaingu.hcmute.repository.PaymentRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,6 +18,9 @@ import java.util.stream.Collectors;
 public class InvoiceService {
     @Autowired
     private InvoiceRepository invoiceRepository;
+
+    @Autowired
+    private PaymentRepository paymentRepository;
 
     public List<Invoice> getAllInvoices() {
         return invoiceRepository.myGetAll();
@@ -89,6 +94,58 @@ public class InvoiceService {
     }
 
     /**
+     * Cập nhật trạng thái hóa đơn theo số tiền còn lại (totalAmount = remaining) và lịch sử Payment.
+     *
+     * Quy ước: Invoice.totalAmount là số tiền CÒN LẠI phải thu.
+     * - remaining <= 0 => Paid
+     * - remaining > 0 và có ít nhất 1 payment Success => Partial
+     * - còn lại => Unpaid
+     */
+    public void recalculateInvoiceStatus(Integer invoiceId) {
+        if (invoiceId == null) return;
+        Optional<Invoice> opt = invoiceRepository.findById(invoiceId);
+        if (opt.isEmpty()) return;
+        Invoice invoice = opt.get();
+        BigDecimal remaining = invoice.getTotalAmount() != null ? invoice.getTotalAmount() : BigDecimal.ZERO;
+
+        BigDecimal paidSum = paymentRepository.findByInvoice_InvoiceId(invoiceId)
+                .stream()
+                .filter(p -> p.getStatus() == Payment.Status.Success)
+                .map(Payment::getAmount)
+                .filter(a -> a != null)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
+            invoice.setStatus(Invoice.Status.Paid);
+        } else if (paidSum.compareTo(BigDecimal.ZERO) > 0) {
+            invoice.setStatus(Invoice.Status.Partial);
+        } else {
+            invoice.setStatus(Invoice.Status.Unpaid);
+        }
+        invoiceRepository.save(invoice);
+    }
+
+    /**
+     * Cộng/trừ số tiền còn lại của hóa đơn theo chênh lệch "net paid".
+     *
+     * deltaNetPaid > 0: thu thêm (Success) => remaining giảm
+     * deltaNetPaid < 0: hoàn tiền (Refunded) => remaining tăng
+     */
+    public void applyDeltaNetPaid(Integer invoiceId, BigDecimal deltaNetPaid) {
+        if (invoiceId == null || deltaNetPaid == null) return;
+        Optional<Invoice> opt = invoiceRepository.findById(invoiceId);
+        if (opt.isEmpty()) return;
+        Invoice invoice = opt.get();
+        BigDecimal remaining = invoice.getTotalAmount() != null ? invoice.getTotalAmount() : BigDecimal.ZERO;
+
+        // remaining -= deltaNetPaid
+        BigDecimal newRemaining = remaining.subtract(deltaNetPaid);
+        if (newRemaining.compareTo(BigDecimal.ZERO) < 0) newRemaining = BigDecimal.ZERO;
+        invoice.setTotalAmount(newRemaining);
+        invoiceRepository.save(invoice);
+    }
+
+    /**
      * Áp dụng promotion cho một hoá đơn:
      * - Giảm theo tỷ lệ % trên totalAmount.
      * - Không ghi lại thông tin promotion trong Invoice (nếu cần có thể mở rộng sau).
@@ -113,7 +170,9 @@ public class InvoiceService {
         }
 
         invoice.setTotalAmount(discounted);
-        return Optional.of(invoiceRepository.save(invoice));
+        Invoice saved = invoiceRepository.save(invoice);
+        recalculateInvoiceStatus(saved.getInvoiceId());
+        return Optional.of(saved);
     }
 
     /**

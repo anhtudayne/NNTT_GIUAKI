@@ -113,11 +113,14 @@ public class PaymentManagerPanel extends JPanel {
 
     private void openEditDialog() {
         if (selectedPaymentId == null) return;
-        Payment p = getSelectedFromTable();
-        if (p == null) return;
-        PaymentFormDialog dlg = new PaymentFormDialog(
-                (Window) SwingUtilities.getWindowAncestor(this), apiService, true, p, this::loadPayments);
-        dlg.setVisible(true);
+        try {
+            Payment p = apiService.getPaymentById(selectedPaymentId);
+            PaymentFormDialog dlg = new PaymentFormDialog(
+                    (Window) SwingUtilities.getWindowAncestor(this), apiService, true, p, this::loadPayments);
+            dlg.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private Payment getSelectedFromTable() {

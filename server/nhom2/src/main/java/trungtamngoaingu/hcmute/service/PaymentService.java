@@ -16,6 +16,9 @@ public class PaymentService {
     @Autowired
     private PaymentRepository paymentRepository;
 
+    @Autowired
+    private InvoiceService invoiceService;
+
     public List<Payment> getAllPayments() {
         return paymentRepository.myGetAll();
     }
@@ -24,20 +27,70 @@ public class PaymentService {
         return paymentRepository.findById(id);
     }
 
+    /** Lấy tất cả thanh toán thuộc một hóa đơn. */
+    public List<Payment> getPaymentsByInvoiceId(Integer invoiceId) {
+        if (invoiceId == null) return List.of();
+        return paymentRepository.findByInvoice_InvoiceId(invoiceId);
+    }
+
     public Payment createPayment(Payment payment) {
-        return paymentRepository.save(payment);
+        Payment saved = paymentRepository.save(payment);
+        if (saved.getInvoice() != null) {
+            BigDecimal net = netPaidEffect(saved);
+            invoiceService.applyDeltaNetPaid(saved.getInvoice().getInvoiceId(), net);
+            invoiceService.recalculateInvoiceStatus(saved.getInvoice().getInvoiceId());
+        }
+        return saved;
     }
 
     public Payment updatePayment(Integer id, Payment payment) {
-        if (paymentRepository.existsById(id)) {
-            payment.setPaymentId(id);
-            return paymentRepository.save(payment);
+        if (!paymentRepository.existsById(id)) return null;
+        Payment old = paymentRepository.findById(id).orElse(null);
+        Integer oldInvoiceId = old != null && old.getInvoice() != null ? old.getInvoice().getInvoiceId() : null;
+        BigDecimal oldNet = old != null ? netPaidEffect(old) : BigDecimal.ZERO;
+        payment.setPaymentId(id);
+        Payment saved = paymentRepository.save(payment);
+        Integer newInvoiceId = saved.getInvoice() != null ? saved.getInvoice().getInvoiceId() : null;
+        BigDecimal newNet = netPaidEffect(saved);
+
+        if (oldInvoiceId != null && (newInvoiceId == null || !oldInvoiceId.equals(newInvoiceId))) {
+            // revert effect on old invoice
+            invoiceService.applyDeltaNetPaid(oldInvoiceId, oldNet.negate());
+            invoiceService.recalculateInvoiceStatus(oldInvoiceId);
         }
-        return null;
+        if (newInvoiceId != null) {
+            // apply delta effect on new invoice
+            BigDecimal delta = newNet.subtract(oldInvoiceId != null && oldInvoiceId.equals(newInvoiceId) ? oldNet : BigDecimal.ZERO);
+            invoiceService.applyDeltaNetPaid(newInvoiceId, delta);
+            invoiceService.recalculateInvoiceStatus(newInvoiceId);
+        }
+        return saved;
     }
 
     public void deletePayment(Integer id) {
+        Payment old = paymentRepository.findById(id).orElse(null);
+        Integer invoiceId = old != null && old.getInvoice() != null ? old.getInvoice().getInvoiceId() : null;
+        BigDecimal oldNet = old != null ? netPaidEffect(old) : BigDecimal.ZERO;
         paymentRepository.deleteById(id);
+        if (invoiceId != null) {
+            invoiceService.applyDeltaNetPaid(invoiceId, oldNet.negate());
+            invoiceService.recalculateInvoiceStatus(invoiceId);
+        }
+    }
+
+    /**
+     * Quy đổi Payment sang "net paid effect" để cập nhật remaining của hóa đơn:
+     * - Success  => +amount (thu vào)
+     * - Refunded => -amount (hoàn trả)
+     * - Failed   => 0
+     */
+    private static BigDecimal netPaidEffect(Payment p) {
+        if (p == null || p.getAmount() == null || p.getStatus() == null) return BigDecimal.ZERO;
+        return switch (p.getStatus()) {
+            case Success -> p.getAmount();
+            case Refunded -> p.getAmount().negate();
+            case Failed -> BigDecimal.ZERO;
+        };
     }
 
     /**
