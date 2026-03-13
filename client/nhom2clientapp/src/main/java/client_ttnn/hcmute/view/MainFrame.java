@@ -1,564 +1,547 @@
 package client_ttnn.hcmute.view;
 
 import client_ttnn.hcmute.model.UserAccount;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Scrollable;
 
 public class MainFrame extends JFrame {
-    private static final Color SIDEBAR_BG = new Color(31, 45, 61);
-    private static final Color SIDEBAR_BG_GRADIENT = new Color(24, 35, 50);
-    private static final Color DEFAULT_MENU_BG = new Color(52, 73, 94);
-    private static final Color RESOURCE_MENU_BG = new Color(26, 188, 156);
-    private static final Color ACTIVE_MENU_BG = new Color(241, 196, 15);
-    private static final Color MENU_TEXT_COLOR = new Color(236, 240, 241);
-    private static final Color CHILD_MENU_TEXT_COLOR = new Color(214, 225, 236);
-    private static final Color HEADER_CARD_BG = new Color(255, 255, 255, 26);
+    private static final Color APP_BG = new Color(0xE0E5EC);
+    private static final Color SURFACE = new Color(0xE7ECF3);
+    private static final Color SURFACE_ALT = new Color(0xEEF2F8);
+    private static final Color TEXT = new Color(34, 41, 57);
+    private static final Color TEXT_MUTED = new Color(92, 102, 120);
+    private static final Color ACCENT = new Color(120, 150, 255);
 
-    // Màu tab con theo nhóm để giao diện sinh động hơn
-    private static final Color DASHBOARD_BTN_COLOR = new Color(52, 152, 219);
-    private static final Color FINANCE_BTN_COLOR = new Color(22, 160, 133);
-    private static final Color SCHEDULE_BTN_COLOR = new Color(41, 128, 185);
-    private static final Color TIMETABLE_BTN_COLOR = new Color(52, 73, 94);
-    private static final Color ATTENDANCE_BTN_COLOR = new Color(230, 126, 34);
-    private static final Color ENROLLMENT_BTN_COLOR = new Color(39, 174, 96);
-
-    private static final Color COURSE_BTN_COLOR = new Color(155, 89, 182);
-    private static final Color CLASS_BTN_COLOR = new Color(142, 68, 173);
-    private static final Color EDUCATION_BTN_COLOR = new Color(142, 68, 173);
-    private static final Color PLACEMENT_TEST_BTN_COLOR = new Color(127, 140, 141);
-    private static final Color CERTIFICATE_BTN_COLOR = new Color(243, 156, 18);
-    
-    // Màu riêng cho từng nút quản lý nguồn lực
-    private static final Color STUDENT_BTN_COLOR = new Color(52, 152, 219);  // Xanh dương
-    private static final Color TEACHER_BTN_COLOR = new Color(155, 89, 182);  // Tím
-    private static final Color STAFF_BTN_COLOR = new Color(230, 126, 34);    // Cam
-    private static final Color ROOM_BTN_COLOR = new Color(22, 160, 133);     // Xanh lá
-    
+    private final List<NavButton> navButtons = new ArrayList<>();
+    private ClayPanel mainContentHost;
     private JPanel contentPanel;
     private CardLayout cardLayout;
-    private UserAccount currentUser;
 
     public MainFrame(UserAccount user) {
-        this.currentUser = user;
-        setTitle("Hệ Thống Quản Lý Trung Tâm Ngoại Ngữ - " + (user != null ? user.getRole() : ""));
-        setSize(1300, 750);
+        setTitle("Hệ Thống Quản Lý Trung Tâm Ngoại Ngữ - " + (user != null ? user.getRole() : "Guest"));
+        setSize(1440, 840);
+        setMinimumSize(new Dimension(1100, 700));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
+        JPanel root = new JPanel(new BorderLayout(18, 18));
+        // "Dock" sidebar to the left edge
+        root.setBorder(new EmptyBorder(18, 0, 18, 18));
+        root.setBackground(APP_BG);
 
-        // 1. Tạo Sidebar (Menu bên trái)
-        JPanel sidebarPanel = new GradientPanel(SIDEBAR_BG, SIDEBAR_BG_GRADIENT);
-        sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
-        sidebarPanel.setPreferredSize(new Dimension(280, 0)); // Tăng độ rộng lên 280
-        sidebarPanel.setBorder(new EmptyBorder(20, 10, 20, 10));
+        root.add(buildSidebar(user), BorderLayout.WEST);
+        root.add(buildMainArea(user), BorderLayout.CENTER);
 
-        JPanel brandCard = new JPanel(new BorderLayout(0, 4));
-        brandCard.setOpaque(true);
-        brandCard.setBackground(HEADER_CARD_BG);
-        brandCard.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(255, 255, 255, 45)),
-            new EmptyBorder(12, 14, 12, 14)
-        ));
-        brandCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, 86));
-        JLabel lblLogo = new JLabel("LANGUAGE CENTER", SwingConstants.LEFT);
-        lblLogo.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 19));
-        lblLogo.setForeground(Color.WHITE);
-        JLabel lblRole = new JLabel(user != null ? "Role: " + user.getRole() : "Role: Guest", SwingConstants.LEFT);
-        lblRole.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
-        lblRole.setForeground(new Color(220, 230, 241));
-        brandCard.add(lblLogo, BorderLayout.CENTER);
-        brandCard.add(lblRole, BorderLayout.SOUTH);
-        sidebarPanel.add(brandCard);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 24))); // Khoảng cách
+        setContentPane(root);
+        setBackground(APP_BG);
 
-        // 2. Tạo phần Nội dung chính (CardLayout)
+        if (!navButtons.isEmpty()) {
+            setActive(navButtons.getFirst());
+        }
+    }
+
+    private JComponent buildSidebar(UserAccount user) {
+        // BorderLayout for sidebar: NORTH=brand, CENTER=scrollable nav, SOUTH=hint.
+        // BorderLayout.CENTER always fills the full remaining width — no BoxLayout alignment drift.
+        ClayPanel sidebar = new ClayPanel(new BorderLayout(0, 14));
+        sidebar.setFill(SURFACE);
+        sidebar.setArc(36);
+        sidebar.setShadowSize(16);
+        sidebar.setElevation(5);
+        sidebar.setInsetSize(12);
+        sidebar.setReserveShadowInsets(false);
+        sidebar.setBorder(new EmptyBorder(20, 18, 20, 18));
+        // Wider sidebar so nav labels are easier to read
+        sidebar.setPreferredSize(new Dimension(420, 0));
+
+        // --- Brand block (NORTH) ---
+        ClayPanel brand = new ClayPanel(new BorderLayout(0, 6));
+        brand.setFill(SURFACE_ALT).setArc(24).setShadowSize(10).setElevation(4).setInsetSize(10);
+        brand.setReserveShadowInsets(false);
+        brand.setBorder(new EmptyBorder(18, 18, 18, 18));
+
+        JLabel title = new JLabel("Language Center");
+        title.setForeground(TEXT);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+
+        String roleText = "Role: " + (user != null && user.getRole() != null ? user.getRole() : "Guest");
+        JLabel subtitle = new JLabel(roleText);
+        subtitle.setForeground(TEXT_MUTED);
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 20));
+
+        brand.add(title, BorderLayout.CENTER);
+        brand.add(subtitle, BorderLayout.SOUTH);
+        sidebar.add(brand, BorderLayout.NORTH);
+
+        // --- Nav groups (CENTER) — full width guaranteed by BorderLayout ---
+        FullWidthPanel navStack = new FullWidthPanel();
+        navStack.setBorder(new EmptyBorder(4, 0, 4, 0));
+
+        SectionGroup overview = new SectionGroup("Tổng quan & Doanh thu", true);
+        overview.addItem(navItem("Dashboard", "DashboardPanel"));
+        overview.addItem(gap(10));
+        overview.addItem(navItem("Hóa đơn, Thanh toán & Khuyến mãi", "FinancePanel"));
+
+        SectionGroup resources = new SectionGroup("Quản Lý Nguồn Lực", false);
+        resources.addItem(navItem("Quản Lý Học Viên", "StudentPanel"));
+        resources.addItem(gap(10));
+        resources.addItem(navItem("Quản Lý Giảng Viên", "TeacherPanel"));
+        resources.addItem(gap(10));
+        resources.addItem(navItem("Quản Lý Nhân Sự", "StaffPanel"));
+        resources.addItem(gap(10));
+        resources.addItem(navItem("Quản Lý Phòng Học", "RoomPanel"));
+
+        SectionGroup academic = new SectionGroup("Quản lý học vụ", false);
+        academic.addItem(navItem("Xếp Lịch Học", "SchedulePanel"));
+        academic.addItem(gap(10));
+        academic.addItem(navItem("Xem Thời Khoá Biểu", "TimetablePanel"));
+        academic.addItem(gap(10));
+        academic.addItem(navItem("Điểm Danh Lớp", "AttendancePanel"));
+        academic.addItem(gap(10));
+        academic.addItem(navItem("Quản Lý Ghi Danh", "EnrollmentPanel"));
+        academic.addItem(gap(10));
+        academic.addItem(navItem("Khóa học & Lớp học", "EducationPanel"));
+
+        SectionGroup other = new SectionGroup("Khác", false);
+        other.addItem(navItem("Quản Lý Placement Test", "PlacementTestPanel"));
+        other.addItem(gap(10));
+        other.addItem(navItem("Quản Lý Chứng Chỉ", "CertificatePanel"));
+
+        applyRoleVisibility(user, overview, resources, academic, other);
+
+        navStack.add(overview);
+        navStack.add(gap(16));
+        navStack.add(resources);
+        navStack.add(gap(16));
+        navStack.add(academic);
+        navStack.add(gap(16));
+        navStack.add(other);
+
+        JScrollPane navScroll = new JScrollPane(navStack);
+        navScroll.setBorder(BorderFactory.createEmptyBorder());
+        navScroll.setOpaque(false);
+        navScroll.getViewport().setOpaque(false);
+        navScroll.getVerticalScrollBar().setUnitIncrement(16);
+        navScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        sidebar.add(navScroll, BorderLayout.CENTER);
+
+        return sidebar;
+    }
+
+    private JComponent buildMainArea(UserAccount user) {
+        mainContentHost = new ClayPanel(new BorderLayout(18, 18));
+        mainContentHost.setFill(SURFACE);
+        mainContentHost.setArc(34);
+        mainContentHost.setShadowSize(24);
+        mainContentHost.setElevation(8);
+        mainContentHost.setInsetSize(16);
+        mainContentHost.setBorder(new EmptyBorder(18, 18, 18, 18));
+
+        // Removed Clay header (keep content maximized)
+        mainContentHost.add(buildProjectCards(user), BorderLayout.CENTER);
+
+        return mainContentHost;
+    }
+
+    private JComponent buildHeader(UserAccount user) {
+        ClayPanel header = new ClayPanel(new GridBagLayout());
+        header.setFill(SURFACE_ALT).setArc(28).setShadowSize(16).setElevation(6).setInsetSize(12);
+        header.setBorder(new EmptyBorder(16, 16, 16, 16));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JLabel headline = new JLabel("Clay Dashboard");
+        headline.setForeground(TEXT);
+        headline.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 22));
+
+        JLabel desc = new JLabel("Pastel surfaces, big radius, inset + drop shadows (Graphics2D).");
+        desc.setForeground(TEXT_MUTED);
+        desc.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+
+        JPanel left = new JPanel();
+        left.setOpaque(false);
+        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+        left.add(headline);
+        left.add(Box.createRigidArea(new Dimension(0, 6)));
+        left.add(desc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        header.add(left, gbc);
+
+        ClayPill pill = new ClayPill("Status: POC");
+        pill.setMaximumSize(new Dimension(160, 34));
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 0;
+        gbc.insets = new Insets(0, 12, 0, 0);
+        header.add(pill, gbc);
+
+        return header;
+    }
+
+    private JComponent buildProjectCards(UserAccount user) {
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
-        contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10)); // Breathing room
+        contentPanel.setOpaque(false);
+        contentPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        // --- Khởi tạo các Panel chức năng ---
-        DashboardPanel dashboardPanel = new DashboardPanel();
-        StudentManagerPanel studentPanel = new StudentManagerPanel();
-        TeacherManagerPanel teacherPanel = new TeacherManagerPanel();
-        StaffManagerPanel staffPanel = new StaffManagerPanel(); // NHÂN SỰ
-        RoomManagerPanel roomPanel = new RoomManagerPanel(); // PHÒNG HỌC
-        ScheduleManagerPanel schedulePanel = new ScheduleManagerPanel(); // LỊCH HỌC
-        TimetableViewPanel timetablePanel = new TimetableViewPanel(); // XEM TKB
-        AttendanceManagerPanel attendancePanel = new AttendanceManagerPanel(this.currentUser); // ĐIỂM DANH LỚP
-        EducationManagerPanel educationPanel = new EducationManagerPanel(); // Gộp: Lớp học, Khóa học
-        EnrollmentManagerPanel enrollmentPanel = new EnrollmentManagerPanel();
-        PlacementTestManagerPanel placementTestPanel = new PlacementTestManagerPanel();
-        CertificateManagerPanel certificatePanel = new CertificateManagerPanel();
-        FinanceManagerPanel financePanel = new FinanceManagerPanel(); // Gộp: Hóa đơn, Thanh toán, Khuyến mãi
+        // Real project panels
+        contentPanel.add(new DashboardPanel(), "DashboardPanel");
+        contentPanel.add(new StudentManagerPanel(), "StudentPanel");
+        contentPanel.add(new TeacherManagerPanel(), "TeacherPanel");
+        contentPanel.add(new StaffManagerPanel(), "StaffPanel");
+        contentPanel.add(new RoomManagerPanel(), "RoomPanel");
+        contentPanel.add(new ScheduleManagerPanel(), "SchedulePanel");
+        contentPanel.add(new TimetableViewPanel(), "TimetablePanel");
+        contentPanel.add(new AttendanceManagerPanel(user), "AttendancePanel");
+        contentPanel.add(new EducationManagerPanel(), "EducationPanel");
+        contentPanel.add(new EnrollmentManagerPanel(), "EnrollmentPanel");
+        contentPanel.add(new PlacementTestManagerPanel(), "PlacementTestPanel");
+        contentPanel.add(new CertificateManagerPanel(), "CertificatePanel");
+        contentPanel.add(new FinanceManagerPanel(), "FinancePanel");
 
-        // Đặt tên chuỗi cho từng Card để gọi
-        contentPanel.add(dashboardPanel, "DashboardPanel");
-        contentPanel.add(studentPanel, "StudentPanel");
-        contentPanel.add(teacherPanel, "TeacherPanel");
-        contentPanel.add(staffPanel, "StaffPanel");
-        contentPanel.add(roomPanel, "RoomPanel");
-        contentPanel.add(schedulePanel, "SchedulePanel");
-        contentPanel.add(timetablePanel, "TimetablePanel");
-        contentPanel.add(attendancePanel, "AttendancePanel");
-        contentPanel.add(educationPanel, "EducationPanel");
-        contentPanel.add(enrollmentPanel, "EnrollmentPanel");
-        contentPanel.add(placementTestPanel, "PlacementTestPanel");
-        contentPanel.add(certificatePanel, "CertificatePanel");
-        contentPanel.add(financePanel, "FinancePanel");
+        ClayPanel host = new ClayPanel(new BorderLayout());
+        host.setFill(SURFACE_ALT).setArc(30).setShadowSize(18).setElevation(6).setInsetSize(14);
+        host.setBorder(new EmptyBorder(10, 10, 10, 10));
+        host.add(contentPanel, BorderLayout.CENTER);
 
-        // --- Tạo các Nút Menu ---
-        JButton btnDashboard = createMenuButton("Dashboard");
-        JButton btnStudent = createResourceButton("👤 Quản Lý Học Viên");
-        JButton btnTeacher = createResourceButton("👨‍🎓 Quản Lý Giảng Viên");
-        JButton btnStaff = createResourceButton("👥 Quản Lý Nhân Sự"); 
-        JButton btnRoom = createResourceButton("🏫 Quản Lý Phòng Học"); 
-        JButton btnToggleOverviewRevenue = createMenuButton("Tổng quan & Doanh thu ▸");
-        JButton btnToggleManagement = createMenuButton("Quản Lý Nguồn Lực ▸");
-        JButton btnToggleAcademic = createMenuButton("Quản lý học vụ ▸");
-        JButton btnSchedule = createMenuButton("Xếp Lịch Học"); // LỊCH HỌC
-        JButton btnTimetable = createMenuButton("Xem Thời Khoá Biểu"); // XEM TKB
-        JButton btnAttendance = createMenuButton("Điểm Danh Lớp"); // ĐIỂM DANH LỚP
-        JButton btnEducation = createMenuButton("Khóa học & Lớp học"); // ĐÀO TẠO
-        JButton btnEnrollment = createMenuButton("Quản Lý Ghi Danh");
-        JButton btnToggleOther = createMenuButton("Khác ▸");
-        JButton btnPlacementTest = createMenuButton("Quản Lý Placement Test");
-        JButton btnCertificate = createMenuButton("Quản Lý Chứng Chỉ");
-        JButton btnFinance = createMenuButton("Hóa đơn, Thanh toán & Khuyến mãi");
+        return host;
+    }
 
-        styleSectionToggleButton(btnToggleOverviewRevenue, new Color(52, 152, 219));
-        styleSectionToggleButton(btnToggleManagement, new Color(39, 174, 96));
-        styleSectionToggleButton(btnToggleAcademic, new Color(155, 89, 182));
-        styleSectionToggleButton(btnToggleOther, new Color(52, 73, 94));
+    private ClayPanel metricCard(String title, String value, String subtitle, Color badgeColor) {
+        ClayPanel card = new ClayPanel(new BorderLayout(0, 10));
+        card.setFill(SURFACE_ALT).setArc(30).setShadowSize(18).setElevation(6).setInsetSize(14);
+        card.setBorder(new EmptyBorder(16, 16, 16, 16));
+        card.setPreferredSize(new Dimension(260, 150));
 
-        btnDashboard.setBackground(DASHBOARD_BTN_COLOR);
-        btnFinance.setBackground(FINANCE_BTN_COLOR);
-        btnSchedule.setBackground(SCHEDULE_BTN_COLOR);
-        btnTimetable.setBackground(TIMETABLE_BTN_COLOR);
-        btnAttendance.setBackground(ATTENDANCE_BTN_COLOR);
-        btnEnrollment.setBackground(ENROLLMENT_BTN_COLOR);
-        btnEducation.setBackground(EDUCATION_BTN_COLOR);
-        btnPlacementTest.setBackground(PLACEMENT_TEST_BTN_COLOR);
-        btnCertificate.setBackground(CERTIFICATE_BTN_COLOR);
-        
-        // Áp dụng màu riêng cho từng nút nguồn lực
-        btnStudent.setBackground(STUDENT_BTN_COLOR);
-        btnStudent.setForeground(Color.WHITE);
-        btnTeacher.setBackground(TEACHER_BTN_COLOR);
-        btnTeacher.setForeground(Color.WHITE);
-        btnStaff.setBackground(STAFF_BTN_COLOR);
-        btnStaff.setForeground(Color.WHITE);
-        btnRoom.setBackground(ROOM_BTN_COLOR);
-        btnRoom.setForeground(Color.WHITE);
-        
-        JButton[] resourceTabButtons = {btnStudent, btnTeacher, btnStaff, btnRoom};
-        JButton[] navigationButtons = {
-            btnDashboard, btnStudent, btnTeacher, btnStaff, btnRoom,
-            btnSchedule, btnTimetable, btnAttendance, btnEducation,
-            btnEnrollment, btnPlacementTest, btnCertificate, btnFinance
-        };
+        JLabel t = new JLabel(title);
+        t.setForeground(TEXT_MUTED);
+        t.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
 
-        // Add action cho các nút để chuyển Card
-        btnDashboard.addActionListener(e -> {
-            cardLayout.show(contentPanel, "DashboardPanel");
-            setActiveMenuButton(btnDashboard, navigationButtons, resourceTabButtons);
+        JLabel v = new JLabel(value);
+        v.setForeground(TEXT);
+        v.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 28));
+
+        JLabel sub = new JLabel(subtitle);
+        sub.setForeground(TEXT_MUTED);
+        sub.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+        top.add(t, BorderLayout.WEST);
+
+        ClayDot dot = new ClayDot(badgeColor);
+        top.add(dot, BorderLayout.EAST);
+
+        JPanel mid = new JPanel();
+        mid.setOpaque(false);
+        mid.setLayout(new BoxLayout(mid, BoxLayout.Y_AXIS));
+        mid.add(v);
+        mid.add(Box.createRigidArea(new Dimension(0, 6)));
+        mid.add(sub);
+
+        card.add(top, BorderLayout.NORTH);
+        card.add(mid, BorderLayout.CENTER);
+        return card;
+    }
+
+    private ClayPanel activityCard() {
+        ClayPanel card = new ClayPanel(new BorderLayout(0, 12));
+        card.setFill(SURFACE_ALT).setArc(32).setShadowSize(18).setElevation(6).setInsetSize(14);
+        card.setBorder(new EmptyBorder(16, 16, 16, 16));
+
+        JLabel t = new JLabel("Recent activity");
+        t.setForeground(TEXT);
+        t.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
+
+        JPanel list = new JPanel();
+        list.setOpaque(false);
+        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+        list.add(activityRow("New student enrolled", "2m ago"));
+        list.add(Box.createRigidArea(new Dimension(0, 10)));
+        list.add(activityRow("Schedule updated", "15m ago"));
+        list.add(Box.createRigidArea(new Dimension(0, 10)));
+        list.add(activityRow("Payment received", "1h ago"));
+        list.add(Box.createVerticalGlue());
+
+        card.add(t, BorderLayout.NORTH);
+        card.add(list, BorderLayout.CENTER);
+        return card;
+    }
+
+    private JComponent activityRow(String label, String time) {
+        ClayPanel row = new ClayPanel(new BorderLayout(12, 0));
+        row.setFill(new Color(0xF3F6FB)).setArc(26).setShadowSize(14).setElevation(5).setInsetSize(12);
+        row.setBorder(new EmptyBorder(12, 12, 12, 12));
+        row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
+
+        JLabel l = new JLabel(label);
+        l.setForeground(TEXT);
+        l.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+
+        JLabel r = new JLabel(time);
+        r.setForeground(TEXT_MUTED);
+        r.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
+
+        row.add(l, BorderLayout.WEST);
+        row.add(r, BorderLayout.EAST);
+        return row;
+    }
+
+    private JComponent navItem(String label, String cardKey) {
+        // Plain JPanel wrapper (no ClayPanel shadow here — shadow is in NavButton's paint)
+        JPanel tile = new JPanel(new BorderLayout());
+        tile.setOpaque(false);
+        tile.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
+
+        NavButton btn = new NavButton(label);
+        btn.setActionCommand(cardKey);
+        btn.addActionListener(e -> {
+            setActive(btn);
+            if (cardLayout != null && contentPanel != null) {
+                cardLayout.show(contentPanel, cardKey);
+            }
         });
-        btnStudent.addActionListener(e -> {
-            cardLayout.show(contentPanel, "StudentPanel");
-            setActiveMenuButton(btnStudent, navigationButtons, resourceTabButtons);
-        });
-        btnTeacher.addActionListener(e -> {
-            cardLayout.show(contentPanel, "TeacherPanel");
-            setActiveMenuButton(btnTeacher, navigationButtons, resourceTabButtons);
-        });
-        btnStaff.addActionListener(e -> {
-            cardLayout.show(contentPanel, "StaffPanel");
-            setActiveMenuButton(btnStaff, navigationButtons, resourceTabButtons);
-        });
-        btnRoom.addActionListener(e -> {
-            cardLayout.show(contentPanel, "RoomPanel");
-            setActiveMenuButton(btnRoom, navigationButtons, resourceTabButtons);
-        });
-        btnSchedule.addActionListener(e -> {
-            cardLayout.show(contentPanel, "SchedulePanel");
-            setActiveMenuButton(btnSchedule, navigationButtons, resourceTabButtons);
-        });
-        btnTimetable.addActionListener(e -> {
-            cardLayout.show(contentPanel, "TimetablePanel");
-            setActiveMenuButton(btnTimetable, navigationButtons, resourceTabButtons);
-        });
-        btnAttendance.addActionListener(e -> {
-            cardLayout.show(contentPanel, "AttendancePanel");
-            setActiveMenuButton(btnAttendance, navigationButtons, resourceTabButtons);
-        });
-        btnEducation.addActionListener(e -> {
-            cardLayout.show(contentPanel, "EducationPanel");
-            setActiveMenuButton(btnEducation, navigationButtons, resourceTabButtons);
-        });
-        btnEnrollment.addActionListener(e -> {
-            cardLayout.show(contentPanel, "EnrollmentPanel");
-            setActiveMenuButton(btnEnrollment, navigationButtons, resourceTabButtons);
-        });
-        btnPlacementTest.addActionListener(e -> {
-            cardLayout.show(contentPanel, "PlacementTestPanel");
-            setActiveMenuButton(btnPlacementTest, navigationButtons, resourceTabButtons);
-        });
-        btnCertificate.addActionListener(e -> {
-            cardLayout.show(contentPanel, "CertificatePanel");
-            setActiveMenuButton(btnCertificate, navigationButtons, resourceTabButtons);
-        });
-        btnFinance.addActionListener(e -> {
-            cardLayout.show(contentPanel, "FinancePanel");
-            setActiveMenuButton(btnFinance, navigationButtons, resourceTabButtons);
-        });
+        navButtons.add(btn);
 
-        JPanel overviewRevenuePanel = new JPanel();
-        overviewRevenuePanel.setLayout(new BoxLayout(overviewRevenuePanel, BoxLayout.Y_AXIS));
-        overviewRevenuePanel.setOpaque(false);
-        overviewRevenuePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        overviewRevenuePanel.setBorder(new EmptyBorder(4, 14, 4, 0));
-        overviewRevenuePanel.setVisible(false);
+        tile.add(btn, BorderLayout.CENTER);
+        return tile;
+    }
 
-        overviewRevenuePanel.add(btnDashboard);
-        overviewRevenuePanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        overviewRevenuePanel.add(btnFinance);
-
-        btnToggleOverviewRevenue.addActionListener(e -> {
-            boolean isExpanded = overviewRevenuePanel.isVisible();
-            overviewRevenuePanel.setVisible(!isExpanded);
-            btnToggleOverviewRevenue.setText(!isExpanded ? "Tổng quan & Doanh thu ▾" : "Tổng quan & Doanh thu ▸");
-            sidebarPanel.revalidate();
-            sidebarPanel.repaint();
-        });
-
-        JPanel managementButtonsPanel = new JPanel();
-        managementButtonsPanel.setLayout(new BoxLayout(managementButtonsPanel, BoxLayout.Y_AXIS));
-        managementButtonsPanel.setOpaque(false);
-        managementButtonsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        managementButtonsPanel.setBorder(new EmptyBorder(4, 14, 4, 0));
-        managementButtonsPanel.setVisible(false);
-
-        managementButtonsPanel.add(btnStudent);
-        managementButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        managementButtonsPanel.add(btnTeacher);
-        managementButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        managementButtonsPanel.add(btnStaff);
-        managementButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        managementButtonsPanel.add(btnRoom);
-
-        btnToggleManagement.addActionListener(e -> {
-            boolean isExpanded = managementButtonsPanel.isVisible();
-            managementButtonsPanel.setVisible(!isExpanded);
-            btnToggleManagement.setText(!isExpanded ? "Quản Lý Nguồn Lực ▾" : "Quản Lý Nguồn Lực ▸");
-            sidebarPanel.revalidate();
-            sidebarPanel.repaint();
-        });
-
-        JPanel academicButtonsPanel = new JPanel();
-        academicButtonsPanel.setLayout(new BoxLayout(academicButtonsPanel, BoxLayout.Y_AXIS));
-        academicButtonsPanel.setOpaque(false);
-        academicButtonsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        academicButtonsPanel.setBorder(new EmptyBorder(4, 14, 4, 0));
-        academicButtonsPanel.setVisible(false);
-
-        academicButtonsPanel.add(btnSchedule);
-        academicButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        academicButtonsPanel.add(btnTimetable);
-        academicButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        academicButtonsPanel.add(btnAttendance);
-        academicButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        academicButtonsPanel.add(btnEnrollment);
-        academicButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        academicButtonsPanel.add(btnEducation);
-
-        btnToggleAcademic.addActionListener(e -> {
-            boolean isExpanded = academicButtonsPanel.isVisible();
-            academicButtonsPanel.setVisible(!isExpanded);
-            btnToggleAcademic.setText(!isExpanded ? "Quản lý học vụ ▾" : "Quản lý học vụ ▸");
-            sidebarPanel.revalidate();
-            sidebarPanel.repaint();
-        });
-
-        JPanel otherButtonsPanel = new JPanel();
-        otherButtonsPanel.setLayout(new BoxLayout(otherButtonsPanel, BoxLayout.Y_AXIS));
-        otherButtonsPanel.setOpaque(false);
-        otherButtonsPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        otherButtonsPanel.setBorder(new EmptyBorder(4, 14, 4, 0));
-        otherButtonsPanel.setVisible(false);
-
-        otherButtonsPanel.add(btnPlacementTest);
-        otherButtonsPanel.add(Box.createRigidArea(new Dimension(0, 12)));
-        otherButtonsPanel.add(btnCertificate);
-
-        btnToggleOther.addActionListener(e -> {
-            boolean isExpanded = otherButtonsPanel.isVisible();
-            otherButtonsPanel.setVisible(!isExpanded);
-            btnToggleOther.setText(!isExpanded ? "Khác ▾" : "Khác ▸");
-            sidebarPanel.revalidate();
-            sidebarPanel.repaint();
-        });
-
-        sidebarPanel.add(btnToggleOverviewRevenue);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 8)));
-        sidebarPanel.add(overviewRevenuePanel);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        sidebarPanel.add(btnToggleManagement);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 8)));
-        sidebarPanel.add(managementButtonsPanel);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 25)));
-        sidebarPanel.add(btnToggleAcademic);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 8)));
-        sidebarPanel.add(academicButtonsPanel);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 15)));
-        sidebarPanel.add(btnToggleOther);
-        sidebarPanel.add(Box.createRigidArea(new Dimension(0, 8)));
-        sidebarPanel.add(otherButtonsPanel);
-
-        // --- LOGIC PHÂN QUYỀN HEADER ---
-        // Nếu là GIÁO VIÊN (Teacher), ẩn các nút Không thuộc thẩm quyền
-        if (currentUser != null && "Teacher".equals(currentUser.getRole())) {
-            btnToggleOverviewRevenue.setVisible(false);
-            overviewRevenuePanel.setVisible(false);
-            btnDashboard.setVisible(false);
-            btnToggleManagement.setVisible(false);
-            managementButtonsPanel.setVisible(false);
-            btnToggleAcademic.setVisible(true);
-            academicButtonsPanel.setVisible(true);
-            btnToggleAcademic.setText("Quản lý học vụ ▾");
-            btnToggleOther.setVisible(false);
-            otherButtonsPanel.setVisible(false);
-            btnStudent.setVisible(false);
-            btnTeacher.setVisible(false);
-            btnStaff.setVisible(false);
-            btnRoom.setVisible(false);
-            btnEducation.setVisible(false);
-            btnEnrollment.setVisible(false);
-            btnPlacementTest.setVisible(false);
-            btnCertificate.setVisible(false);
-            btnFinance.setVisible(false);
-            // Teacher chỉ được xếp lịch và Xem TKB
-            // Teacher chỉ được xếp lịch, Xem TKB và THỰC HIỆN ĐIỂM DANH
-            // Nút btnAttendance KHÔNG BỊ setVisible(false) -> Giáo viên được quyền truy cập!
-            
-            // Mở mặc định Tab TKB cho Teacher lúc vào
-            cardLayout.show(contentPanel, "TimetablePanel"); 
-            setActiveMenuButton(btnTimetable, navigationButtons, resourceTabButtons);
-        } else {
-            overviewRevenuePanel.setVisible(true);
-            btnToggleOverviewRevenue.setText("Tổng quan & Doanh thu ▾");
-            academicButtonsPanel.setVisible(false);
-            btnToggleAcademic.setText("Quản lý học vụ ▸");
-            otherButtonsPanel.setVisible(false);
-            btnToggleOther.setText("Khác ▸");
-            // Mặc định cho Admin/Staff: mở Dashboard khi vào
-            cardLayout.show(contentPanel, "DashboardPanel");
-            setActiveMenuButton(btnDashboard, navigationButtons, resourceTabButtons);
+    private void setActive(NavButton active) {
+        for (NavButton b : navButtons) {
+            b.setActive(b == active);
         }
-
-        // Thêm Sidebar và Content vào Frame
-        add(sidebarPanel, BorderLayout.WEST);
-        add(contentPanel, BorderLayout.CENTER);
-    }
-
-    /**
-     * Hàm tiện ích tạo Nút Menu cho Sidebar
-     */
-    private JButton createMenuButton(String text) {
-        JButton button = new SidebarButton(text);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40)); // Chiều rộng kéo dài hết mức
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        button.setFocusPainted(false);
-        button.setHorizontalAlignment(SwingConstants.LEFT);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        button.setForeground(CHILD_MENU_TEXT_COLOR);
-        button.setBackground(DEFAULT_MENU_BG);
-        button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 4, 0, 0, new Color(255, 255, 255, 55)),
-            BorderFactory.createEmptyBorder(9, 18, 9, 12)
-        ));
-        button.setMargin(new Insets(0, 0, 0, 0));
-        
-        return button;
-    }
-
-    /**
-     * Tạo nút quản lý nguồn lực với styling đặc biệt
-     */
-    private JButton createResourceButton(String text) {
-        JButton button = new SidebarButton(text);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
-        button.setFocusPainted(false);
-        button.setHorizontalAlignment(SwingConstants.LEFT);
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        button.setForeground(CHILD_MENU_TEXT_COLOR);
-        button.setBackground(DEFAULT_MENU_BG);
-        button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 4, 0, 0, new Color(255, 255, 255, 70)),
-            BorderFactory.createEmptyBorder(9, 20, 9, 12)
-        ));
-        button.setMargin(new Insets(0, 0, 0, 0));
-        
-        return button;
-    }
-
-    private void styleSectionToggleButton(JButton button, Color background) {
-        button.setBackground(background);
-        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
-        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-        button.setForeground(Color.WHITE);
-        button.setHorizontalAlignment(SwingConstants.LEFT);
-        button.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 0, 0, new Color(0, 0, 0, 0)),
-            BorderFactory.createEmptyBorder(13, 16, 13, 12)
-        ));
-        button.setMargin(new Insets(0, 0, 0, 0));
-    }
-
-    private static class GradientPanel extends JPanel {
-        private final Color topColor;
-        private final Color bottomColor;
-
-        private GradientPanel(Color topColor, Color bottomColor) {
-            this.topColor = topColor;
-            this.bottomColor = bottomColor;
-            setOpaque(false);
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            GradientPaint gp = new GradientPaint(0, 0, topColor, 0, getHeight(), bottomColor);
-            g2.setPaint(gp);
-            g2.fillRect(0, 0, getWidth(), getHeight());
-            g2.dispose();
-            super.paintComponent(g);
+        if (mainContentHost != null) {
+            mainContentHost.repaint();
         }
     }
 
-    private static class SidebarButton extends JButton {
+    private static class NavButton extends JButton {
+        private boolean active;
         private boolean hovered;
 
-        private SidebarButton(String text) {
+        private NavButton(String text) {
             super(text);
-            setContentAreaFilled(false);
-            setFocusPainted(false);
-            setBorderPainted(false);
             setOpaque(false);
-            addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    hovered = true;
-                    repaint();
-                }
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setFocusPainted(false);
+            // LEFT alignment + fill full width of container
+            setHorizontalAlignment(SwingConstants.LEFT);
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            setForeground(TEXT);
+            setFont(new Font("Segoe UI", Font.PLAIN, 20));
+            // Left pad gives text breathing room from edge
+            setBorder(new EmptyBorder(12, 22, 12, 12));
 
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    hovered = false;
-                    repaint();
-                }
+            addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override public void mouseEntered(java.awt.event.MouseEvent e) { hovered = true; repaint(); }
+                @Override public void mouseExited(java.awt.event.MouseEvent e)  { hovered = false; repaint(); }
             });
         }
 
+        private void setActive(boolean active) {
+            this.active = active;
+            setForeground(active ? new Color(30, 40, 100) : TEXT);
+            setFont(new Font("Segoe UI", active ? Font.BOLD : Font.PLAIN, 20));
+            repaint();
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            if (active || hovered) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                try {
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    // Pill shape — fills full button width so it looks like a card
+                    int arc = 18;
+                    int px = 4, py = 3;
+                    int pw = getWidth() - px * 2;
+                    int ph = getHeight() - py * 2;
+
+                    if (active) {
+                        // Solid light accent fill + top highlight
+                        g2.setColor(new Color(ACCENT.getRed(), ACCENT.getGreen(), ACCENT.getBlue(), 45));
+                        g2.fillRoundRect(px, py, pw, ph, arc, arc);
+                        // Top-left highlight strip
+                        g2.setColor(new Color(255, 255, 255, 80));
+                        g2.fillRoundRect(px + 2, py + 2, pw - 4, ph / 2, arc, arc);
+                        // Soft left accent bar
+                        g2.setColor(ACCENT);
+                        g2.fillRoundRect(px, py + 6, 3, ph - 12, 3, 3);
+                    } else {
+                        // Hover: very subtle fill
+                        g2.setColor(new Color(ACCENT.getRed(), ACCENT.getGreen(), ACCENT.getBlue(), 18));
+                        g2.fillRoundRect(px, py, pw, ph, arc, arc);
+                        g2.setColor(new Color(255, 255, 255, 50));
+                        g2.drawRoundRect(px, py, pw, ph, arc, arc);
+                    }
+                } finally {
+                    g2.dispose();
+                }
+            }
+            super.paintComponent(g);
+        }
+    }
+
+    private static class ClayDot extends JComponent {
+        private final Color color;
+
+        private ClayDot(Color color) {
+            this.color = color != null ? color : new Color(120, 150, 255);
+            setPreferredSize(new Dimension(18, 18));
+            setMinimumSize(new Dimension(18, 18));
+            setOpaque(false);
+        }
+
         @Override
         protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int s = Math.min(getWidth(), getHeight());
+                int x = (getWidth() - s) / 2;
+                int y = (getHeight() - s) / 2;
 
-            Color bg = getBackground();
-            ButtonModel model = getModel();
-            if (model.isPressed()) {
-                bg = adjustBrightness(bg, -24);
-            } else if (hovered && isEnabled()) {
-                bg = adjustBrightness(bg, 18);
-            }
+                g2.setColor(new Color(0, 0, 0, 25));
+                g2.fillOval(x + 2, y + 2, s - 3, s - 3);
 
-            g2.setColor(bg);
-            Shape shape = new RoundRectangle2D.Float(2, 2, getWidth() - 4, getHeight() - 4, 12, 12);
-            g2.fill(shape);
+                g2.setColor(color);
+                g2.fillOval(x, y, s - 3, s - 3);
 
-            g2.setColor(new Color(255, 255, 255, 36));
-            g2.draw(shape);
-
-            g2.setColor(new Color(255, 255, 255, 22));
-            g2.fillRoundRect(6, 5, Math.max(0, getWidth() - 12), Math.max(0, (getHeight() / 2) - 4), 10, 10);
-            g2.dispose();
-
-            super.paintComponent(g);
-        }
-
-        private static Color adjustBrightness(Color c, int delta) {
-            int r = Math.max(0, Math.min(255, c.getRed() + delta));
-            int g = Math.max(0, Math.min(255, c.getGreen() + delta));
-            int b = Math.max(0, Math.min(255, c.getBlue() + delta));
-            return new Color(r, g, b);
-        }
-    }
-
-    /**
-     * Tô nổi bật nhóm nút quản lý nguồn lực để dễ nhận diện.
-     */
-    private void applyResourceButtonStyle(JButton button) {
-        button.setBackground(RESOURCE_MENU_BG);
-        button.setForeground(Color.WHITE);
-    }
-    
-    /**
-     * Lấy màu gốc của nút nguồn lực dựa trên text
-     */
-    private Color getResourceButtonColor(JButton button) {
-        String text = button.getText();
-        if (text.contains("Học Viên")) return STUDENT_BTN_COLOR;
-        if (text.contains("Giảng Viên")) return TEACHER_BTN_COLOR;
-        if (text.contains("Nhân Sự")) return STAFF_BTN_COLOR;
-        if (text.contains("Phòng Học")) return ROOM_BTN_COLOR;
-        return RESOURCE_MENU_BG;
-    }
-
-    private Color getNavigationButtonColor(JButton button, JButton[] resourceTabButtons) {
-        if (containsButton(resourceTabButtons, button)) {
-            return getResourceButtonColor(button);
-        }
-
-        String text = button.getText();
-        if (text.contains("Dashboard")) return DASHBOARD_BTN_COLOR;
-        if (text.contains("Hóa đơn")) return FINANCE_BTN_COLOR;
-        if (text.contains("Xếp Lịch")) return SCHEDULE_BTN_COLOR;
-        if (text.contains("Thời Khoá Biểu")) return TIMETABLE_BTN_COLOR;
-        if (text.contains("Điểm Danh")) return ATTENDANCE_BTN_COLOR;
-        if (text.contains("Ghi Danh")) return ENROLLMENT_BTN_COLOR;
-        if (text.contains("Khóa Học")) return COURSE_BTN_COLOR;
-        if (text.contains("Lớp Học")) return CLASS_BTN_COLOR;
-        if (text.contains("Khóa học & Lớp học")) return EDUCATION_BTN_COLOR;
-        if (text.contains("Placement Test")) return PLACEMENT_TEST_BTN_COLOR;
-        if (text.contains("Chứng Chỉ")) return CERTIFICATE_BTN_COLOR;
-        return DEFAULT_MENU_BG;
-    }
-
-    private void setActiveMenuButton(JButton activeButton, JButton[] navigationButtons, JButton[] resourceTabButtons) {
-        for (JButton button : navigationButtons) {
-            button.setBackground(getNavigationButtonColor(button, resourceTabButtons));
-            button.setForeground(Color.WHITE);
-        }
-
-        activeButton.setBackground(ACTIVE_MENU_BG);
-        activeButton.setForeground(new Color(44, 62, 80));
-    }
-
-    private boolean containsButton(JButton[] buttons, JButton target) {
-        for (JButton button : buttons) {
-            if (button == target) {
-                return true;
+                g2.setColor(new Color(255, 255, 255, 160));
+                g2.fillOval(x + 2, y + 2, Math.max(1, s / 3), Math.max(1, s / 3));
+            } finally {
+                g2.dispose();
             }
         }
-        return false;
     }
+
+    private static class ClayPill extends ClayPanel {
+        private ClayPill(String text) {
+            super(new BorderLayout());
+            setFill(new Color(0xF3F6FB));
+            setArc(999);
+            setShadowSize(12);
+            setElevation(4);
+            setInsetSize(10);
+            setBorder(new EmptyBorder(8, 12, 8, 12));
+
+            JLabel l = new JLabel(text);
+            l.setForeground(TEXT_MUTED);
+            l.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+            add(l, BorderLayout.CENTER);
+        }
+    }
+
+    private static Component gap(int h) {
+        return Box.createRigidArea(new Dimension(0, h));
+    }
+
+    private void applyRoleVisibility(UserAccount user, SectionGroup overview, SectionGroup resources, SectionGroup academic, SectionGroup other) {
+        String role = user != null ? user.getRole() : null;
+        boolean isTeacher = "Teacher".equals(role);
+
+        if (isTeacher) {
+            overview.setVisible(false);
+            resources.setVisible(false);
+            other.setVisible(false);
+            academic.setExpanded(true);
+        } else {
+            overview.setExpanded(true);
+        }
+    }
+
+    private static class SectionGroup extends JPanel {
+        private final SectionToggle toggle;
+        private final JPanel body;
+
+        private SectionGroup(String title, boolean expanded) {
+            setOpaque(false);
+            setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+            setAlignmentX(Component.LEFT_ALIGNMENT);
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+            toggle = new SectionToggle(title);
+            toggle.setAlignmentX(Component.LEFT_ALIGNMENT);
+            toggle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+
+            body = new JPanel();
+            body.setOpaque(false);
+            body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
+            body.setBorder(new EmptyBorder(6, 8, 0, 0));
+            body.setAlignmentX(Component.LEFT_ALIGNMENT);
+            body.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+            add(toggle);
+            add(body);
+
+            setExpanded(expanded);
+            toggle.addActionListener(e -> setExpanded(!body.isVisible()));
+        }
+
+        private void addItem(Component c) {
+            body.add(c);
+        }
+
+        private void setExpanded(boolean expanded) {
+            body.setVisible(expanded);
+            toggle.setExpanded(expanded);
+            revalidate();
+            repaint();
+        }
+    }
+
+    private static class SectionToggle extends JButton {
+        private boolean expanded;
+
+        private SectionToggle(String title) {
+            super(title);
+            setOpaque(false);
+            setContentAreaFilled(false);
+            setBorderPainted(false);
+            setFocusPainted(false);
+            setHorizontalAlignment(SwingConstants.LEFT);
+            setHorizontalTextPosition(SwingConstants.LEFT);
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            setForeground(TEXT_MUTED);
+            setFont(new Font("Segoe UI", Font.BOLD, 20));
+            setBorder(new EmptyBorder(6, 10, 6, 10));
+        }
+
+        private void setExpanded(boolean expanded) {
+            this.expanded = expanded;
+            setText(getText().replace(" ▾", "").replace(" ▸", "") + (expanded ? " ▾" : " ▸"));
+        }
+    }
+}
+
+/**
+ * A JPanel that always reports its preferred width as the containing JViewport's width.
+ * This is the canonical fix for "items right/center-aligned inside JScrollPane with BoxLayout Y_AXIS":
+ * by returning true from getScrollableTracksViewportWidth(), Swing forces the panel to fill
+ * the viewport width, so BoxLayout has no extra space to use for centering.
+ */
+class FullWidthPanel extends JPanel implements Scrollable {
+    public FullWidthPanel() {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setOpaque(false);
+    }
+
+    @Override public Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
+    @Override public int getScrollableUnitIncrement(Rectangle r, int o, int d) { return 18; }
+    @Override public int getScrollableBlockIncrement(Rectangle r, int o, int d) { return 60; }
+    @Override public boolean getScrollableTracksViewportHeight() { return false; }
+    /** Crucial: force panel width = viewport width so BoxLayout Y_AXIS left-aligns all items. */
+    @Override public boolean getScrollableTracksViewportWidth() { return true; }
 }
