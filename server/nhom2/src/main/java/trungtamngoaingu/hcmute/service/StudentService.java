@@ -1,6 +1,8 @@
 package trungtamngoaingu.hcmute.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Student;
 import trungtamngoaingu.hcmute.repository.StudentRepository;
@@ -16,14 +18,13 @@ public class StudentService {
         return studentRepository.myGetAll();
     }
 
-    // public Optional<Student> getStudentById(Integer id) {
-    //     return studentRepository.findById(id);
-    // }
+    public Page<Student> getStudentsPaged(Pageable pageable) {
+        return studentRepository.findAll(pageable);
+    }
+
     // Lấy 1 sinh viên theo ID
     public Optional<Student> getStudentById(Integer id) {
-        return studentRepository.myGetAll().stream()
-                .filter(s -> s.getStudentId().equals(id))
-                .findFirst();
+        return studentRepository.findById(id);
     }
 
     // Tạo mới sinh viên
@@ -31,35 +32,17 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    // public Student updateStudent(Integer id, Student student) {
-    //     if (studentRepository.existsById(id)) {
-    //         student.setStudentId(id);
-    //         return studentRepository.save(student);
-    //     }
-    //     return null;
-    // }
     // Cập nhật sinh viên
     public Student updateStudent(Integer id, Student student) {
-        // Kiểm tra sự tồn tại bằng stream
-        boolean exists = studentRepository.myGetAll().stream()
-                .anyMatch(s -> s.getStudentId().equals(id));
-
-        if (exists) {
+        if (studentRepository.existsById(id)) {
             student.setStudentId(id);
             return studentRepository.save(student);
         }
         return null;
     }
 
-    // public void deleteStudent(Integer id) {
-    //     studentRepository.deleteById(id);
-    // }
-    // Xóa sinh viên (Logic lọc để tìm đối tượng trước khi xóa)
     public void deleteStudent(Integer id) {
-        studentRepository.myGetAll().stream()
-                .filter(s -> s.getStudentId().equals(id))
-                .findFirst()
-                .ifPresent(s -> studentRepository.deleteById(s.getStudentId()));
+        studentRepository.deleteById(id);
     }
 
     public List<Student> searchStudentsByName(String name) {
@@ -67,15 +50,7 @@ public class StudentService {
     }
     // Tìm kiếm sinh viên theo tên
 
-    /**
-     * Dùng Stream API để lọc danh sách giảng viên đang làm việc (Active)
-     * Giải thích:
-     * - Pipeline Data sẽ đi từ collection thông qua filter để so sánh hằng số Enum.
-     * - Đây là biểu mẫu chuẩn mực cho Functional Programming tại Java nhằm trích xuất Sublist tốc độ cao trên RAM.
-     */
     public List<Student> getActiveStudents() {
-        return studentRepository.myGetAll().stream()
-                .filter(t -> t.getStatus() == Student.Status.Active)
-                .toList();
+        return studentRepository.findByStatus(Student.Status.Active);
     }
 }

@@ -1,6 +1,8 @@
 package trungtamngoaingu.hcmute.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Enrollment;
 import trungtamngoaingu.hcmute.repository.EnrollmentRepository;
@@ -16,11 +18,12 @@ public class EnrollmentService {
         return enrollmentRepository.myGetAll();
     }
 
-    // 1. Lấy thông tin đăng ký theo ID bằng Stream
+    public Page<Enrollment> getEnrollmentsPaged(Pageable pageable) {
+        return enrollmentRepository.findAll(pageable);
+    }
+
     public Optional<Enrollment> getEnrollmentById(Integer id) {
-        return enrollmentRepository.myGetAll().stream()
-                .filter(e -> e.getEnrollmentId().equals(id))
-                .findFirst();
+        return enrollmentRepository.findById(id);
     }
 
     // 2. Tạo mới đăng ký (vẫn gọi save để ghi xuống Database)
@@ -28,24 +31,16 @@ public class EnrollmentService {
         return enrollmentRepository.save(enrollment);
     }
 
-    // 3. Cập nhật đăng ký bằng cách kiểm tra tồn tại qua Stream
     public Enrollment updateEnrollment(Integer id, Enrollment enrollment) {
-        boolean exists = enrollmentRepository.myGetAll().stream()
-                .anyMatch(e -> e.getEnrollmentId().equals(id));
-
-        if (exists) {
+        if (enrollmentRepository.existsById(id)) {
             enrollment.setEnrollmentId(id);
             return enrollmentRepository.save(enrollment);
         }
         return null;
     }
 
-    // 4. Xóa đăng ký sau khi xác nhận ID tồn tại trong danh sách tổng
     public void deleteEnrollment(Integer id) {
-        enrollmentRepository.myGetAll().stream()
-                .filter(e -> e.getEnrollmentId().equals(id))
-                .findFirst()
-                .ifPresent(e -> enrollmentRepository.deleteById(e.getEnrollmentId()));
+        enrollmentRepository.deleteById(id);
     }
 
     // public Optional<Enrollment> getEnrollmentById(Integer id) {

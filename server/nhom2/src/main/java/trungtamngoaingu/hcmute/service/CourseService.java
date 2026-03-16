@@ -1,6 +1,8 @@
 package trungtamngoaingu.hcmute.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Course;
 import trungtamngoaingu.hcmute.repository.CourseRepository;
@@ -16,11 +18,12 @@ public class CourseService {
         return courseRepository.myGetAll();
     }
 
-    // Lấy 1 khóa học theo ID bằng Stream
+    public Page<Course> getCoursesPaged(Pageable pageable) {
+        return courseRepository.findAll(pageable);
+    }
+
     public Optional<Course> getCourseById(Integer id) {
-        return courseRepository.myGetAll().stream()
-                .filter(c -> c.getCourseId().equals(id))
-                .findFirst();
+        return courseRepository.findById(id);
     }
 
     // Tạo mới khóa học (vẫn dùng save để lưu xuống DB)
@@ -28,24 +31,16 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
-    // Cập nhật khóa học bằng cách kiểm tra tồn tại qua Stream
     public Course updateCourse(Integer id, Course course) {
-        boolean exists = courseRepository.myGetAll().stream()
-                .anyMatch(c -> c.getCourseId().equals(id));
-
-        if (exists) {
+        if (courseRepository.existsById(id)) {
             course.setCourseId(id);
             return courseRepository.save(course);
         }
         return null;
     }
 
-    // Xóa khóa học sau khi lọc ID
     public void deleteCourse(Integer id) {
-        courseRepository.myGetAll().stream()
-                .filter(c -> c.getCourseId().equals(id))
-                .findFirst()
-                .ifPresent(c -> courseRepository.deleteById(c.getCourseId()));
+        courseRepository.deleteById(id);
     }
 
     // public Optional<Course> getCourseById(Integer id) {

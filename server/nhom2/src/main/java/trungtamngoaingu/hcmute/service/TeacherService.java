@@ -1,9 +1,12 @@
 package trungtamngoaingu.hcmute.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Teacher;
 import trungtamngoaingu.hcmute.repository.TeacherRepository;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +17,10 @@ public class TeacherService {
 
     public List<Teacher> getAllTeachers() {
         return teacherRepository.myGetAll();
+    }
+
+    public Page<Teacher> getTeachersPaged(Pageable pageable) {
+        return teacherRepository.findAll(pageable);
     }
 
     public Optional<Teacher> getTeacherById(Integer id) {
@@ -48,15 +55,13 @@ public class TeacherService {
      * - .toList(): Trả về ArrayList chứa mọi Object được đánh giá true bởi bộ giải filter.
      */
     public List<Teacher> searchTeachersByName(String keyword) {
-        List<Teacher> allTeachers = teacherRepository.findAll();
         if (keyword == null || keyword.trim().isEmpty()) {
-            return allTeachers;
+            // Trường hợp không có từ khóa, chỉ cần trả về toàn bộ danh sách tối ưu sẵn
+            return teacherRepository.myGetAll();
         }
-        String query = keyword.toLowerCase().trim();
-
-        return allTeachers.stream()
-                .filter(t -> t.getFullName() != null && t.getFullName().toLowerCase().contains(query))
-                .toList(); // java 16+ thay cho collect(Collectors.toList())
+        String query = keyword.trim();
+        // Đẩy điều kiện tìm kiếm xuống database (LIKE, ignore case)
+        return teacherRepository.findByFullNameContainingIgnoreCase(query);
     }
 
     /**
@@ -66,23 +71,19 @@ public class TeacherService {
      * - Đây là biểu mẫu chuẩn mực cho Functional Programming tại Java nhằm trích xuất Sublist tốc độ cao trên RAM.
      */
     public List<Teacher> getActiveTeachers() {
-        return teacherRepository.findAll().stream()
-                .filter(t -> t.getStatus() == Teacher.Status.Active)
-                .toList();
+        // Lọc trực tiếp trên database theo Status
+        return teacherRepository.findByStatus(Teacher.Status.Active);
     }
 
     /**
      * Dùng Stream API để tìm các giảng viên dạy một chuyên môn cụ thể (VD: IELTS)
      */
     public List<Teacher> getTeachersBySpecialty(String specialty) {
-        List<Teacher> allTeachers = teacherRepository.findAll();
         if (specialty == null || specialty.trim().isEmpty()) {
-            return allTeachers;
+            return teacherRepository.myGetAll();
         }
-        String query = specialty.toLowerCase().trim();
-        
-        return allTeachers.stream()
-                .filter(t -> t.getSpecialty() != null && t.getSpecialty().toLowerCase().contains(query))
-                .toList();
+        String query = specialty.trim();
+
+        return teacherRepository.findBySpecialtyContainingIgnoreCase(query);
     }
 }

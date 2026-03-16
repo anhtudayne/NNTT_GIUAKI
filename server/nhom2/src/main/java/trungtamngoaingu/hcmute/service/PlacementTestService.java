@@ -36,11 +36,8 @@ public class PlacementTestService {
         return placementTestRepository.myGetAll();
     }
 
-    // 1. Lấy thông tin bài test theo ID bằng Stream
     public Optional<PlacementTest> getPlacementTestById(Integer id) {
-        return placementTestRepository.myGetAll().stream()
-                .filter(t -> t.getTestId().equals(id))
-                .findFirst();
+        return placementTestRepository.findById(id);
     }
 
     // 2. Tạo mới bài test (Vẫn giữ nguyên phương thức lưu vào DB)
@@ -52,12 +49,8 @@ public class PlacementTestService {
         return placementTestRepository.save(placementTest);
     }
 
-    // 3. Cập nhật bài test bằng cách kiểm tra tồn tại qua Stream
     public PlacementTest updatePlacementTest(Integer id, PlacementTest placementTest) {
-        boolean exists = placementTestRepository.myGetAll().stream()
-                .anyMatch(t -> t.getTestId().equals(id));
-
-        if (exists) {
+        if (placementTestRepository.existsById(id)) {
             placementTest.setTestId(id);
             if (placementTest.getRecommendedLevel() == null && placementTest.getScore() != null) {
                 placementTest.setRecommendedLevel(computeRecommendedLevel(placementTest.getScore()));
@@ -67,12 +60,8 @@ public class PlacementTestService {
         return null;
     }
 
-    // 4. Xóa bài test dựa trên kết quả lọc của Stream
     public void deletePlacementTest(Integer id) {
-        placementTestRepository.myGetAll().stream()
-                .filter(t -> t.getTestId().equals(id))
-                .findFirst()
-                .ifPresent(t -> placementTestRepository.deleteById(t.getTestId()));
+        placementTestRepository.deleteById(id);
     }
 
     // public Optional<PlacementTest> getPlacementTestById(Integer id) {
@@ -121,19 +110,20 @@ public class PlacementTestService {
             return Optional.of(new PlacementTestRecommendationDTO(test, level, List.of(), List.of()));
         }
 
-        List<Course> suggestedCourses = courseRepository.myGetAll().stream()
-                .filter(c -> c.getStatus() == Course.Status.Active && c.getLevel() == courseLevel)
-                .collect(Collectors.toList());
+        // Đẩy filter xuống database: chỉ lấy các course Active theo level
+        List<Course> suggestedCourses = courseRepository.findByStatusAndLevel(Course.Status.Active, courseLevel);
 
         List<Integer> courseIds = suggestedCourses.stream()
                 .map(Course::getCourseId)
-                .collect(Collectors.toList());
+                .toList();
 
-        List<Class> suggestedClasses = classRepository.myGetAll().stream()
-                .filter(clz -> clz.getCourse() != null
-                        && courseIds.contains(clz.getCourse().getCourseId())
-                        && (clz.getStatus() == Class.Status.Pending || clz.getStatus() == Class.Status.Ongoing))
-                .collect(Collectors.toList());
+        // Đẩy filter xuống database: chỉ lấy class thuộc courseIds và status phù hợp
+        List<Class> suggestedClasses = courseIds.isEmpty()
+                ? List.of()
+                : classRepository.findByCourse_CourseIdInAndStatusIn(
+                        courseIds,
+                        List.of(Class.Status.Pending, Class.Status.Ongoing)
+                );
 
         return Optional.of(new PlacementTestRecommendationDTO(test, level, suggestedCourses, suggestedClasses));
     }

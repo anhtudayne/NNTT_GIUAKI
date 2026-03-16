@@ -169,54 +169,77 @@ public class AttendanceManagerPanel extends JPanel {
             return;
         }
 
-        try {
-            String dateStr = txtDate.getText().trim();
-            if(dateStr.isEmpty()){
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập Ngày (yyyy-MM-dd)!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Gọi API kiểm tra Data cũ
-            List<Attendance> oldData = attendanceApiService.getAttendancesByClassIdAndDate(selectedClass.getClassId().intValue(), dateStr);
-            tableModel.setRowCount(0); // clear cũ
-
-            if (oldData != null && !oldData.isEmpty()) {
-                // Đã có data -> Chế độ Xem / Cập nhật
-                for (Attendance a : oldData) {
-                    Student s = a.getStudent();
-                    Object[] row = {
-                        a.getAttendanceId(),
-                        s.getId(),
-                        s.getFullName(),
-                        s.getEmail(),
-                        s.getPhone(),
-                        a.getStatus() 
-                    };
-                    tableModel.addRow(row);
-                }
-            } else {
-                // Trống -> Chế độ Tạo mới (Lấy List Học Sinh Đổ vào, Set Present)
-                List<Student> students = attendanceApiService.getStudentsByClassId(selectedClass.getClassId().intValue());
-                for (Student s : students) {
-                    Object[] row = {
-                        null, // Insert data mới Id = null
-                        s.getId(),
-                        s.getFullName(),
-                        s.getEmail(),
-                        s.getPhone(),
-                        "Present" 
-                    };
-                    tableModel.addRow(row);
-                }
-                
-                if(students.isEmpty()){
-                     JOptionPane.showMessageDialog(this, "Lớp này hiện chưa có học viên nào Ghi Danh hoặc Đang học!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi khi lấy danh sách HS: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        String dateStr = txtDate.getText().trim();
+        if (dateStr.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng nhập Ngày (yyyy-MM-dd)!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        btnLoadStudents.setEnabled(false);
+
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            private List<Attendance> oldData;
+            private List<Student> students;
+
+            @Override
+            protected Void doInBackground() throws Exception {
+                oldData = attendanceApiService.getAttendancesByClassIdAndDate(selectedClass.getClassId().intValue(), dateStr);
+                if (oldData == null || oldData.isEmpty()) {
+                    students = attendanceApiService.getStudentsByClassId(selectedClass.getClassId().intValue());
+                }
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                btnLoadStudents.setEnabled(true);
+                try {
+                    get(); // rethrow exception if any
+                    tableModel.setRowCount(0);
+
+                    if (oldData != null && !oldData.isEmpty()) {
+                        for (Attendance a : oldData) {
+                            Student s = a.getStudent();
+                            Object[] row = {
+                                    a.getAttendanceId(),
+                                    s.getId(),
+                                    s.getFullName(),
+                                    s.getEmail(),
+                                    s.getPhone(),
+                                    a.getStatus()
+                            };
+                            tableModel.addRow(row);
+                        }
+                    } else if (students != null) {
+                        for (Student s : students) {
+                            Object[] row = {
+                                    null,
+                                    s.getId(),
+                                    s.getFullName(),
+                                    s.getEmail(),
+                                    s.getPhone(),
+                                    "Present"
+                            };
+                            tableModel.addRow(row);
+                        }
+
+                        if (students.isEmpty()) {
+                            JOptionPane.showMessageDialog(AttendanceManagerPanel.this,
+                                    "Lớp này hiện chưa có học viên nào Ghi Danh hoặc Đang học!",
+                                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(AttendanceManagerPanel.this,
+                            "Lỗi khi lấy danh sách HS: " + e.getMessage(),
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void saveBatchAttendances() {
@@ -249,15 +272,34 @@ public class AttendanceManagerPanel extends JPanel {
             batchList.add(att);
         }
 
-        // GỌI POST GỬI JSON HÀNG LOẠT
-        try {
-            boolean success = attendanceApiService.saveBatchAttendances(batchList);
-            if (success) {
-                JOptionPane.showMessageDialog(this, "Lưu danh sách Điểm danh thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        btnSaveAttendance.setEnabled(false);
+
+        SwingWorker<Boolean, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Boolean doInBackground() throws Exception {
+                return attendanceApiService.saveBatchAttendances(batchList);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi Lưu Điểm Danh: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                btnSaveAttendance.setEnabled(true);
+                try {
+                    boolean success = get();
+                    if (success) {
+                        JOptionPane.showMessageDialog(AttendanceManagerPanel.this,
+                                "Lưu danh sách Điểm danh thành công!",
+                                "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(AttendanceManagerPanel.this,
+                            "Lỗi Lưu Điểm Danh: " + e.getMessage(),
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 }

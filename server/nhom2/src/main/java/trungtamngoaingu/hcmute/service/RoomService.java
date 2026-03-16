@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Room;
 import trungtamngoaingu.hcmute.repository.RoomRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +16,10 @@ public class RoomService {
 
     public List<Room> getAllRooms() {
         return roomRepository.myGetAll();
+    }
+
+    public Page<Room> getRoomsPaged(Pageable pageable) {
+        return roomRepository.findAll(pageable);
     }
 
     public Optional<Room> getRoomById(Integer id) {
@@ -45,12 +51,9 @@ public class RoomService {
      *   trả về boolean (true/false) để giữ lại hoặc bỏ đi Data trong ống truyền.
      */
     public List<Room> getRoomsByStatus(String statusStr) {
-        List<Room> allRooms = roomRepository.myGetAll();
         try {
             Room.Status targetStatus = Room.Status.valueOf(statusStr);
-            return allRooms.stream()
-                    .filter(room -> room.getStatus() == targetStatus)
-                    .toList();
+            return roomRepository.findByStatus(targetStatus);
         } catch (IllegalArgumentException e) {
             return List.of(); 
         }
@@ -63,11 +66,8 @@ public class RoomService {
      * - `toList()`: Collector để kết nối luồng dữ liệu Stream Data về lại dạng List để nhúng trả API.
      */
     public List<Room> getRoomsByMinCapacity(Integer minCapacity) {
-        List<Room> allRooms = roomRepository.myGetAll();
-        if (minCapacity == null) return allRooms;
-        
-        return allRooms.stream()
-                .filter(room -> room.getCapacity() >= minCapacity)
-                .toList();
+        if (minCapacity == null) return roomRepository.myGetAll();
+
+        return roomRepository.findByCapacityGreaterThanEqual(minCapacity);
     }
 }

@@ -189,16 +189,31 @@ public class StudentManagerPanel extends JPanel {
     }
 
     private void loadStudents() {
-        try {
-            List<Student> students = apiService.getAllStudents();
-            updateTable(students);
-            selectedStudentId = null;
-            btnEdit.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải danh sách: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        SwingWorker<List<Student>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Student> doInBackground() throws Exception {
+                return apiService.getAllStudents();
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    List<Student> students = get();
+                    updateTable(students);
+                    selectedStudentId = null;
+                    btnEdit.setEnabled(false);
+                    btnDelete.setEnabled(false);
+                    btnDetails.setEnabled(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(StudentManagerPanel.this,
+                            "Lỗi khi tải danh sách: " + e.getMessage(),
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
     
     private void applyCurrentFilter() {
@@ -216,16 +231,31 @@ public class StudentManagerPanel extends JPanel {
             loadStudents();
             return;
         }
-        try {
-            List<Student> students = apiService.searchByName(searchText);
-            updateTable(students);
-            selectedStudentId = null;
-            btnEdit.setEnabled(false);
-            btnDelete.setEnabled(false);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tìm kiếm: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        SwingWorker<List<Student>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Student> doInBackground() throws Exception {
+                return apiService.searchByName(searchText);
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    List<Student> students = get();
+                    updateTable(students);
+                    selectedStudentId = null;
+                    btnEdit.setEnabled(false);
+                    btnDelete.setEnabled(false);
+                    btnDetails.setEnabled(false);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(StudentManagerPanel.this,
+                            "Lỗi khi tìm kiếm: " + e.getMessage(),
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void updateTable(List<Student> students) {
@@ -257,13 +287,31 @@ public class StudentManagerPanel extends JPanel {
                 "Bạn có chắc chắn muốn xóa học viên này?",
                 "Xác nhận xóa", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (confirm != JOptionPane.YES_OPTION) return;
-        try {
-            apiService.deleteStudent(selectedStudentId);
-            JOptionPane.showMessageDialog(this, "Đã xóa học viên.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
-            loadStudents();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi xóa: " + e.getMessage(),
-                    "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
+
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Long idToDelete = selectedStudentId;
+        SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+                apiService.deleteStudent(idToDelete);
+                return null;
+            }
+
+            @Override
+            protected void done() {
+                setCursor(Cursor.getDefaultCursor());
+                try {
+                    get();
+                    JOptionPane.showMessageDialog(StudentManagerPanel.this,
+                            "Đã xóa học viên.", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                    loadStudents();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(StudentManagerPanel.this,
+                            "Lỗi khi xóa: " + e.getMessage(),
+                            "Lỗi", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        };
+        worker.execute();
     }
 }

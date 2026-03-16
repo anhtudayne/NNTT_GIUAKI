@@ -3,6 +3,10 @@ package trungtamngoaingu.hcmute.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import trungtamngoaingu.hcmute.entity.Payment;
 import trungtamngoaingu.hcmute.service.PaymentService;
@@ -21,6 +25,22 @@ public class PaymentController {
     @GetMapping
     public ResponseEntity<List<Payment>> getAllPayments() {
         return ResponseEntity.ok(paymentService.getAllPayments());
+    }
+
+    /**
+     * Endpoint phân trang (giữ tương thích endpoint GET /api/payments cũ).
+     * Ví dụ: GET /api/payments/paged?page=0&size=20&sort=paymentId&dir=desc
+     */
+    @GetMapping("/paged")
+    public ResponseEntity<Page<Payment>> getPaymentsPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "paymentId") String sort,
+            @RequestParam(defaultValue = "desc") String dir
+    ) {
+        Sort.Direction direction = "asc".equalsIgnoreCase(dir) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sort));
+        return ResponseEntity.ok(paymentService.getPaymentsPaged(pageable));
     }
 
     @GetMapping("/{id}")

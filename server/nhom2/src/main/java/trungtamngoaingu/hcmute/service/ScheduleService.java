@@ -2,11 +2,12 @@ package trungtamngoaingu.hcmute.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import trungtamngoaingu.hcmute.entity.Schedule;
+import trungtamngoaingu.hcmute.dto.BatchScheduleRequest;
 import trungtamngoaingu.hcmute.entity.Class;
 import trungtamngoaingu.hcmute.entity.Room;
-import trungtamngoaingu.hcmute.dto.BatchScheduleRequest;
+import trungtamngoaingu.hcmute.entity.Schedule;
 import trungtamngoaingu.hcmute.repository.ScheduleRepository;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -121,19 +122,17 @@ public class ScheduleService {
      * - Cuối cùng, dùng Filter lọc lại các phòng KHÔNG có ID nằm trong nhóm bị trùng.
      */
     public List<trungtamngoaingu.hcmute.entity.Room> getAvailableRooms(java.time.LocalDate targetDate, java.time.LocalTime start, java.time.LocalTime end) {
-        List<trungtamngoaingu.hcmute.entity.Room> allRooms = roomRepository.findAll();
-        List<Schedule> allSchedules = scheduleRepository.findAll();
+        // Chỉ lấy các lịch trùng ngày & giao khoảng thời gian từ database
+        List<Schedule> overlappingSchedules = scheduleRepository
+                .findByDateAndStartTimeBeforeAndEndTimeAfter(targetDate, end, start);
 
-        // 1. Dùng Stream lấy danh sách ID của các phòng CÓ LỊCH TRÙNG vắt ngang thời gian start và end
-        List<Integer> occupiedRoomIds = allSchedules.stream()
-                .filter(s -> s.getDate().equals(targetDate)) // Có cùng ngày
-                // Logic trùng giờ: (sStart < end) VÀ (sEnd > start) -> Có sự giao nhau về thời gian
-                .filter(s -> s.getStartTime().isBefore(end) && s.getEndTime().isAfter(start))
-                .map(s -> s.getRoom().getRoomId()) // Trích xuất ra RoomID
+        List<Integer> occupiedRoomIds = overlappingSchedules.stream()
+                .filter(s -> s.getRoom() != null)
+                .map(s -> s.getRoom().getRoomId())
                 .toList();
 
-        // 2. Trả về các phòng "Sạch" (Trạng thái Available VÀ Id không nằm trong danh sách đen)
-        return allRooms.stream()
+        // Trả về các phòng Available và không nằm trong danh sách phòng đã bị chiếm
+        return roomRepository.myGetAll().stream()
                 .filter(room -> room.getStatus() == trungtamngoaingu.hcmute.entity.Room.Status.Available)
                 .filter(room -> !occupiedRoomIds.contains(room.getRoomId()))
                 .toList();
@@ -145,19 +144,17 @@ public class ScheduleService {
      * - Cấu trúc: Schedule -> Class -> Teacher.
      */
     public List<trungtamngoaingu.hcmute.entity.Teacher> getAvailableTeachers(java.time.LocalDate targetDate, java.time.LocalTime start, java.time.LocalTime end) {
-        List<trungtamngoaingu.hcmute.entity.Teacher> allTeachers = teacherRepository.findAll();
-        List<Schedule> allSchedules = scheduleRepository.findAll();
+        // Chỉ lấy các lịch trùng ngày & giao khoảng thời gian từ database
+        List<Schedule> overlappingSchedules = scheduleRepository
+                .findByDateAndStartTimeBeforeAndEndTimeAfter(targetDate, end, start);
 
-        // 1. Dùng Stream để quét các giáo viên dính lịch
-        List<Integer> occupiedTeacherIds = allSchedules.stream()
-                .filter(s -> s.getDate().equals(targetDate))
-                .filter(s -> s.getStartTime().isBefore(end) && s.getEndTime().isAfter(start))
+        List<Integer> occupiedTeacherIds = overlappingSchedules.stream()
                 .filter(s -> s.getClassEntity() != null && s.getClassEntity().getTeacher() != null)
-                .map(s -> s.getClassEntity().getTeacher().getTeacherId()) // Trích xuất TeacherID
+                .map(s -> s.getClassEntity().getTeacher().getTeacherId())
                 .toList();
 
-        // 2. Lọc các giáo viên đang Active và KHÔNG dính lịch
-        return allTeachers.stream()
+        // Lọc các giáo viên đang Active và không dính lịch
+        return teacherRepository.myGetAll().stream()
                 .filter(teacher -> teacher.getStatus() == trungtamngoaingu.hcmute.entity.Teacher.Status.Active)
                 .filter(teacher -> !occupiedTeacherIds.contains(teacher.getTeacherId()))
                 .toList();

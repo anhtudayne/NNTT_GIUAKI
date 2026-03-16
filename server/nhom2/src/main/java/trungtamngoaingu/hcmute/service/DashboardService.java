@@ -52,51 +52,32 @@ public class DashboardService {
      */
     public DashboardSummaryDTO getSummary() {
         // 1. Tổng học viên đang Active
-        long totalActiveStudents = studentRepository.myGetAll()
-                .stream()
-                .filter(s -> s.getStatus() == Student.Status.Active)
-                .count();
+        long totalActiveStudents = studentRepository.countByStatus(Student.Status.Active);
 
         // 2. Tổng giáo viên
-        long totalTeachers = teacherRepository.myGetAll().size();
+        long totalTeachers = teacherRepository.count();
 
         // 3. Tổng staff
-        long totalStaff = staffRepository.myGetAll().size();
+        long totalStaff = staffRepository.count();
 
         // 4. Tổng lớp đang Ongoing
-        long totalOngoingClasses = classRepository.myGetAll()
-                .stream()
-                .filter(c -> c.getStatus() == trungtamngoaingu.hcmute.entity.Class.Status.Ongoing)
-                .count();
+        long totalOngoingClasses = classRepository.countByStatus(trungtamngoaingu.hcmute.entity.Class.Status.Ongoing);
 
         // 5. Doanh thu: tính từ Payment có status Success
-        List<Payment> allPayments = paymentRepository.myGetAll();
         LocalDate now = LocalDate.now();
         int currentYear = now.getYear();
         int currentMonth = now.getMonthValue();
 
-        BigDecimal totalRevenueAllTime = sumPayments(allPayments);
-        BigDecimal totalRevenueCurrentYear = sumPayments(
-                allPayments.stream()
-                        .filter(p -> isSameYear(p.getPaymentDate(), currentYear))
-                        .collect(Collectors.toList())
-        );
-        BigDecimal totalRevenueCurrentMonth = sumPayments(
-                allPayments.stream()
-                        .filter(p -> isSameYearMonth(p.getPaymentDate(), currentYear, currentMonth))
-                        .collect(Collectors.toList())
-        );
+        BigDecimal totalRevenueAllTime = paymentRepository.sumAllSuccessfulPayments();
+        BigDecimal totalRevenueCurrentYear = paymentRepository.sumSuccessfulPaymentsByYear(currentYear);
+        BigDecimal totalRevenueCurrentMonth = paymentRepository.sumSuccessfulPaymentsByYearAndMonth(currentYear, currentMonth);
 
         // 6. Tổng certificate đã cấp
-        long totalCertificatesIssued = certificateRepository.myGetAll().size();
+        long totalCertificatesIssued = certificateRepository.count();
 
         // 7. Điểm trung bình toàn bộ kết quả học tập
-        double averageScoreAllResults = resultRepository.myGetAll()
-                .stream()
-                .filter(r -> r.getScore() != null)
-                .mapToDouble(r -> r.getScore().doubleValue())
-                .average()
-                .orElse(0.0);
+        Double avgScore = resultRepository.findAverageScore();
+        double averageScoreAllResults = avgScore != null ? avgScore : 0.0;
 
         return new DashboardSummaryDTO(
                 totalActiveStudents,

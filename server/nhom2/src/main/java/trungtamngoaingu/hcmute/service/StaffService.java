@@ -1,6 +1,8 @@
 package trungtamngoaingu.hcmute.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Staff;
 import trungtamngoaingu.hcmute.repository.StaffRepository;
@@ -14,6 +16,10 @@ public class StaffService {
 
     public List<Staff> getAllStaff() {
         return staffRepository.myGetAll();
+    }
+
+    public Page<Staff> getStaffPaged(Pageable pageable) {
+        return staffRepository.findAll(pageable);
     }
 
     public Optional<Staff> getStaffById(Integer id) {
@@ -46,14 +52,10 @@ public class StaffService {
      * 3. .toList(): Gom các staff vượt qua bộ lọc thành một ArrayList mới (Hỗ trợ từ Java 16).
      */
     public List<Staff> searchStaffByName(String name) {
-        List<Staff> allStaff = staffRepository.myGetAll();
         if (name == null || name.trim().isEmpty()) {
-            return allStaff;
+            return staffRepository.myGetAll();
         }
-        String lowerCaseName = name.toLowerCase();
-        return allStaff.stream()
-                .filter(staff -> staff.getFullName().toLowerCase().contains(lowerCaseName))
-                .toList(); 
+        return staffRepository.findByFullNameContainingIgnoreCase(name.trim());
     }
 
     /**
@@ -63,12 +65,9 @@ public class StaffService {
      * - .toList() đóng băng stream và kết xuất danh sách cuối cùng báo cáo về cho Client.
      */
     public List<Staff> getStaffByRole(String roleStr) {
-        List<Staff> allStaff = staffRepository.myGetAll();
         try {
             Staff.Role targetRole = Staff.Role.valueOf(roleStr);
-            return allStaff.stream()
-                    .filter(staff -> staff.getRole() == targetRole)
-                    .toList();
+            return staffRepository.findByRole(targetRole);
         } catch (IllegalArgumentException e) {
             return List.of(); // Trả về list rỗng nếu Role không hợp lệ
         }

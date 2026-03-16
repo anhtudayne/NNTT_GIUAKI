@@ -1,6 +1,8 @@
 package trungtamngoaingu.hcmute.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Certificate;
 import trungtamngoaingu.hcmute.repository.CertificateRepository;
@@ -16,11 +18,12 @@ public class CertificateService {
         return certificateRepository.myGetAll();
     }
 
-    // 1. Lấy chứng chỉ theo ID bằng Stream
+    public Page<Certificate> getCertificatesPaged(Pageable pageable) {
+        return certificateRepository.findAll(pageable);
+    }
+
     public Optional<Certificate> getCertificateById(Integer id) {
-        return certificateRepository.myGetAll().stream()
-                .filter(c -> c.getCertificateId().equals(id))
-                .findFirst();
+        return certificateRepository.findById(id);
     }
 
     // 2. Tạo mới chứng chỉ
@@ -28,24 +31,16 @@ public class CertificateService {
         return certificateRepository.save(certificate);
     }
 
-    // 3. Cập nhật chứng chỉ bằng cách kiểm tra tồn tại qua anyMatch
     public Certificate updateCertificate(Integer id, Certificate certificate) {
-        boolean exists = certificateRepository.myGetAll().stream()
-                .anyMatch(c -> c.getCertificateId().equals(id));
-
-        if (exists) {
+        if (certificateRepository.existsById(id)) {
             certificate.setCertificateId(id);
             return certificateRepository.save(certificate);
         }
         return null;
     }
 
-    // 4. Xóa chứng chỉ dựa trên kết quả lọc của Stream
     public void deleteCertificate(Integer id) {
-        certificateRepository.myGetAll().stream()
-                .filter(c -> c.getCertificateId().equals(id))
-                .findFirst()
-                .ifPresent(c -> certificateRepository.deleteById(c.getCertificateId()));
+        certificateRepository.deleteById(id);
     }
 
     // public Optional<Certificate> getCertificateById(Integer id) {

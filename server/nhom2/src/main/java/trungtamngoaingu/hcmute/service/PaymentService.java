@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import trungtamngoaingu.hcmute.entity.Payment;
 import trungtamngoaingu.hcmute.repository.PaymentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,6 +23,10 @@ public class PaymentService {
 
     public List<Payment> getAllPayments() {
         return paymentRepository.myGetAll();
+    }
+
+    public Page<Payment> getPaymentsPaged(Pageable pageable) {
+        return paymentRepository.findAll(pageable);
     }
 
     public Optional<Payment> getPaymentById(Integer id) {
@@ -100,12 +106,7 @@ public class PaymentService {
         if (studentId == null) {
             return paymentRepository.myGetAll();
         }
-        return paymentRepository.myGetAll()
-                .stream()
-                .filter(p -> p.getStudent() != null
-                        && p.getStudent().getStudentId() != null
-                        && p.getStudent().getStudentId().equals(studentId))
-                .collect(Collectors.toList());
+        return paymentRepository.findByStudent_StudentId(studentId);
     }
 
     /**
@@ -115,12 +116,7 @@ public class PaymentService {
         if (enrollmentId == null) {
             return paymentRepository.myGetAll();
         }
-        return paymentRepository.myGetAll()
-                .stream()
-                .filter(p -> p.getEnrollment() != null
-                        && p.getEnrollment().getEnrollmentId() != null
-                        && p.getEnrollment().getEnrollmentId().equals(enrollmentId))
-                .collect(Collectors.toList());
+        return paymentRepository.findByEnrollment_EnrollmentId(enrollmentId);
     }
 
     /**
@@ -130,10 +126,7 @@ public class PaymentService {
         if (method == null) {
             return paymentRepository.myGetAll();
         }
-        return paymentRepository.myGetAll()
-                .stream()
-                .filter(p -> method.equals(p.getPaymentMethod()))
-                .collect(Collectors.toList());
+        return paymentRepository.findByPaymentMethod(method);
     }
 
     /**
@@ -143,26 +136,25 @@ public class PaymentService {
         if (status == null) {
             return paymentRepository.myGetAll();
         }
-        return paymentRepository.myGetAll()
-                .stream()
-                .filter(p -> status.equals(p.getStatus()))
-                .collect(Collectors.toList());
+        return paymentRepository.findByStatus(status);
     }
 
     /**
      * Lọc payment theo khoảng ngày thanh toán.
      */
     public List<Payment> getPaymentsByDateRange(LocalDate from, LocalDate to) {
-        return paymentRepository.myGetAll()
-                .stream()
-                .filter(p -> {
-                    LocalDate date = p.getPaymentDate();
-                    if (date == null) return false;
-                    boolean afterFrom = (from == null) || !date.isBefore(from);
-                    boolean beforeTo = (to == null) || !date.isAfter(to);
-                    return afterFrom && beforeTo;
-                })
-                .collect(Collectors.toList());
+        if (from == null && to == null) {
+            return paymentRepository.myGetAll();
+        }
+        if (from == null) {
+            // Không có from: lấy từ rất sớm tới to
+            return paymentRepository.findByPaymentDateBetween(LocalDate.MIN, to);
+        }
+        if (to == null) {
+            // Không có to: lấy từ from tới rất xa
+            return paymentRepository.findByPaymentDateBetween(from, LocalDate.MAX);
+        }
+        return paymentRepository.findByPaymentDateBetween(from, to);
     }
 
     /**

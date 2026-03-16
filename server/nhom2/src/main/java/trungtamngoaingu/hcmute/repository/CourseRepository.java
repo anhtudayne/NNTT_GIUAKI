@@ -10,4 +10,7 @@ import java.util.List;
 public interface CourseRepository extends JpaRepository<Course, Integer> {
   @Query("SELECT co FROM Course co")
   List<Course> myGetAll();
+
+  // Tối ưu: query theo Status + Level cho PlacementTest recommendations
+  List<Course> findByStatusAndLevel(Course.Status status, Course.Level level);
 }

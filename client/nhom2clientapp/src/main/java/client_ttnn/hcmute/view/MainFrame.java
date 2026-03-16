@@ -300,7 +300,7 @@ public class MainFrame extends JFrame {
         // Plain JPanel wrapper (no ClayPanel shadow here — shadow is in NavButton's paint)
         JPanel tile = new JPanel(new BorderLayout());
         tile.setOpaque(false);
-        tile.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
+        tile.setMaximumSize(new Dimension(Integer.MAX_VALUE, 64));
 
         NavButton btn = new NavButton(label);
         btn.setActionCommand(cardKey);
@@ -337,12 +337,12 @@ public class MainFrame extends JFrame {
             setFocusPainted(false);
             // LEFT alignment + fill full width of container
             setHorizontalAlignment(SwingConstants.LEFT);
-            setMaximumSize(new Dimension(Integer.MAX_VALUE, 56));
+            setMaximumSize(new Dimension(Integer.MAX_VALUE, 68));
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             setForeground(TEXT);
             setFont(new Font("Segoe UI", Font.PLAIN, 20));
             // Left pad gives text breathing room from edge
-            setBorder(new EmptyBorder(12, 22, 12, 12));
+            setBorder(new EmptyBorder(16, 22, 16, 12));
 
             addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override public void mouseEntered(java.awt.event.MouseEvent e) { hovered = true; repaint(); }
@@ -370,20 +370,20 @@ public class MainFrame extends JFrame {
                     int ph = getHeight() - py * 2;
 
                     if (active) {
-                        // Solid light accent fill + top highlight
-                        g2.setColor(new Color(ACCENT.getRed(), ACCENT.getGreen(), ACCENT.getBlue(), 45));
+                        // Stronger accent fill + top highlight
+                        g2.setColor(new Color(ACCENT.getRed(), ACCENT.getGreen(), ACCENT.getBlue(), 80));
                         g2.fillRoundRect(px, py, pw, ph, arc, arc);
                         // Top-left highlight strip
-                        g2.setColor(new Color(255, 255, 255, 80));
+                        g2.setColor(new Color(255, 255, 255, 90));
                         g2.fillRoundRect(px + 2, py + 2, pw - 4, ph / 2, arc, arc);
                         // Soft left accent bar
                         g2.setColor(ACCENT);
                         g2.fillRoundRect(px, py + 6, 3, ph - 12, 3, 3);
                     } else {
-                        // Hover: very subtle fill
-                        g2.setColor(new Color(ACCENT.getRed(), ACCENT.getGreen(), ACCENT.getBlue(), 18));
+                        // Hover: slightly stronger fill
+                        g2.setColor(new Color(ACCENT.getRed(), ACCENT.getGreen(), ACCENT.getBlue(), 26));
                         g2.fillRoundRect(px, py, pw, ph, arc, arc);
-                        g2.setColor(new Color(255, 255, 255, 50));
+                        g2.setColor(new Color(255, 255, 255, 60));
                         g2.drawRoundRect(px, py, pw, ph, arc, arc);
                     }
                 } finally {
