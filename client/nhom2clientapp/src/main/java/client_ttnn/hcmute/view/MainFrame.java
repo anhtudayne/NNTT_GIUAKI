@@ -25,6 +25,7 @@ public class MainFrame extends JFrame {
     public MainFrame(UserAccount user) {
         setTitle("Hệ Thống Quản Lý Trung Tâm Ngoại Ngữ - " + (user != null ? user.getRole() : "Guest"));
         setSize(1440, 840);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         setMinimumSize(new Dimension(1100, 700));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -40,7 +41,7 @@ public class MainFrame extends JFrame {
         setBackground(APP_BG);
 
         if (!navButtons.isEmpty()) {
-            setActive(navButtons.getFirst());
+            setActive(navButtons.get(0));
         }
     }
 
@@ -86,7 +87,7 @@ public class MainFrame extends JFrame {
         overview.addItem(gap(10));
         overview.addItem(navItem("Hóa đơn, Thanh toán & Khuyến mãi", "FinancePanel"));
 
-        SectionGroup resources = new SectionGroup("Quản Lý Nguồn Lực", false);
+        SectionGroup resources = new SectionGroup("Quản Lý Nguồn Lực", true);
         resources.addItem(navItem("Quản Lý Học Viên", "StudentPanel"));
         resources.addItem(gap(10));
         resources.addItem(navItem("Quản Lý Giảng Viên", "TeacherPanel"));

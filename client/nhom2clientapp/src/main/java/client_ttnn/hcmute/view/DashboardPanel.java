@@ -50,7 +50,7 @@ public class DashboardPanel extends JPanel {
     private JLabel lblLastUpdated;
     private JLabel lblTotalStudents, lblTotalTeachers, lblTotalStaff, lblTotalClasses;
     private JLabel lblRevenueAllTime, lblRevenueYear, lblRevenueMonth;
-    private JLabel lblCertificates, lblAvgScore;
+    private JLabel lblCertificates;
     private JTable tblRevenue;
     private DefaultTableModel revenueTableModel;
     private JPanel revenueChartPanel;
@@ -229,7 +229,7 @@ public class DashboardPanel extends JPanel {
         centerContentPanel.add(chartsRow);
         centerContentPanel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // ----- TABLE + AVERAGE SCORE -----
+        // ----- TABLE ONLY (Removed AVERAGE SCORE) -----
         JPanel bottomRow = new JPanel(new BorderLayout(16, 0));
         bottomRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         bottomRow.setOpaque(false);
@@ -259,24 +259,9 @@ public class DashboardPanel extends JPanel {
         tableTitle.setForeground(TEXT_SECONDARY);
         tableWrapper.add(tableTitle, BorderLayout.NORTH);
         tableWrapper.add(tableScroll, BorderLayout.CENTER);
+        
+        // Gán nguyên chiều rộng cho tableWrapper
         bottomRow.add(tableWrapper, BorderLayout.CENTER);
-
-        JPanel avgCard = new JPanel(new BorderLayout(12, 12));
-        avgCard.setPreferredSize(new Dimension(220, 0));
-        avgCard.setBackground(CARD_BG);
-        avgCard.setBorder(BorderFactory.createCompoundBorder(
-                new MatteBorder(1, 1, 1, 1, CARD_BORDER),
-                new EmptyBorder(20, 20, 20, 20)));
-        JLabel avgTitle = new JLabel("Điểm trung bình kết quả học tập");
-        avgTitle.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        avgTitle.setForeground(TEXT_SECONDARY);
-        lblAvgScore = new JLabel("--");
-        lblAvgScore.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 28));
-        lblAvgScore.setForeground(ACCENT_OPERATIONS);
-        lblAvgScore.setHorizontalAlignment(SwingConstants.CENTER);
-        avgCard.add(avgTitle, BorderLayout.NORTH);
-        avgCard.add(lblAvgScore, BorderLayout.CENTER);
-        bottomRow.add(avgCard, BorderLayout.EAST);
 
         centerContentPanel.add(bottomRow);
 
@@ -335,7 +320,6 @@ public class DashboardPanel extends JPanel {
         lblRevenueYear.setText(formatMoney(s.getTotalRevenueCurrentYear()));
         lblRevenueMonth.setText(formatMoney(s.getTotalRevenueCurrentMonth()));
         lblCertificates.setText(String.valueOf(s.getTotalCertificatesIssued()));
-        lblAvgScore.setText(String.format("%.2f", s.getAverageScoreAllResults()));
     }
 
     private void updateRevenueTable(List<RevenueByMonth> list) {

@@ -59,9 +59,67 @@ public class InvoiceFormDialog extends JDialog {
     private void initComponents() {
         JPanel content = new JPanel(new BorderLayout(15, 15));
         content.setBorder(new EmptyBorder(20, 24, 20, 24));
-        content.setBackground(Color.WHITE);
+        content.setBackground(new Color(245, 247, 250));
+        
+        // Title Panel
+        JPanel titlePanel = new JPanel();
+        titlePanel.setBackground(new Color(155, 89, 182));
+        titlePanel.setBorder(new EmptyBorder(15, 20, 15, 20));
+        JLabel titleLabel = new JLabel(isEditMode ? "Cập nhật hóa đơn" : "Thêm hóa đơn mới");
+        titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 18));
+        titleLabel.setForeground(Color.WHITE);
+        titlePanel.add(titleLabel);
+        content.add(titlePanel, BorderLayout.NORTH);
+        
+        // Create Tabbed Pane
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        tabbedPane.setBackground(Color.WHITE);
+        
+        // Tab 1: Basic Info
+        JPanel infoTab = createBasicInfoPanel();
+        tabbedPane.addTab("📋 Thông tin cơ bản", infoTab);
+        
+        content.add(tabbedPane, BorderLayout.CENTER);
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
+        btnPanel.setBackground(new Color(245, 247, 250));
+        
+        Dimension refBtn = new JButton("Tìm kiếm").getPreferredSize();
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
+        btnSave.setPreferredSize(refBtn);
+        btnSave.setMinimumSize(refBtn);
+        
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
+        btnCancel.setPreferredSize(refBtn);
+        btnCancel.setMinimumSize(refBtn);
+        btnSave.addActionListener(e -> save());
+        btnCancel.addActionListener(e -> dispose());
+        btnPanel.add(btnCancel);
+        btnPanel.add(btnSave);
+        content.add(btnPanel, BorderLayout.SOUTH);
+        setContentPane(content);
+        getRootPane().setDefaultButton(btnSave);
+    }
+
+    private JPanel createBasicInfoPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(new Color(245, 247, 250));
+        
         JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(Color.WHITE);
+        formPanel.setBackground(new Color(245, 247, 250));
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            new EmptyBorder(15, 10, 15, 10),
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(189, 195, 199), 1),
+                "Thông tin hóa đơn",
+                javax.swing.border.TitledBorder.LEFT,
+                javax.swing.border.TitledBorder.TOP,
+                new Font(Font.SANS_SERIF, Font.BOLD, 14),
+                new Color(52, 73, 94)
+            )
+        ));
+        
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 10, 8, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -88,27 +146,44 @@ public class InvoiceFormDialog extends JDialog {
                 return this;
             }
         });
+        cmbStudent.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+
         txtTotalAmount = new JTextField(cols);
+        txtTotalAmount.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        
         txtAmountAfterDiscount = new JTextField(cols);
         txtAmountAfterDiscount.setEditable(false);
+        txtAmountAfterDiscount.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        
         dcIssueDate = new JDateChooser();
         dcIssueDate.setDateFormatString("yyyy-MM-dd");
+        dcIssueDate.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        dcIssueDate.setPreferredSize(new Dimension(new JTextField(cols).getPreferredSize().width, 30));
+        
         cmbStatus = new JComboBox<>(new String[]{"Unpaid", "Partial", "Paid"});
+        cmbStatus.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        cmbStatus.setPreferredSize(new Dimension(new JTextField(cols).getPreferredSize().width, 30));
+        
         cmbPromotion = new JComboBox<>();
-        cmbPromotion.setPreferredSize(new Dimension(new JTextField(cols).getPreferredSize().width, cmbPromotion.getPreferredSize().height));
+        cmbPromotion.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 14));
+        cmbPromotion.setPreferredSize(new Dimension(new JTextField(cols).getPreferredSize().width, 30));
 
         int row = 0;
         addRow(formPanel, gbc, gbcField, row++, "Học viên:", withClearButton(cmbStudent));
         addRow(formPanel, gbc, gbcField, row++, "Tổng tiền (ban đầu):", txtTotalAmount);
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Khuyến mãi:"), gbc);
+        JLabel lblProm = new JLabel("Khuyến mãi:");
+        lblProm.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblProm, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(cmbPromotion, gbcField);
         row++;
         addRow(formPanel, gbc, gbcField, row++, "Còn phải thu (sau KM):", txtAmountAfterDiscount);
         addRow(formPanel, gbc, gbcField, row++, "Ngày xuất:", dcIssueDate);
         gbc.gridx = 0; gbc.gridy = row;
-        formPanel.add(new JLabel("Trạng thái:"), gbc);
+        JLabel lblStatus = new JLabel("Trạng thái:");
+        lblStatus.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        formPanel.add(lblStatus, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         formPanel.add(cmbStatus, gbcField);
 
@@ -123,29 +198,15 @@ public class InvoiceFormDialog extends JDialog {
         cmbPromotion.addActionListener(e -> recalcDiscountedAmount());
         hookStudentFilter();
 
-        content.add(formPanel, BorderLayout.CENTER);
-
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
-        btnPanel.setBackground(Color.WHITE);
-        Dimension refBtn = new JButton("Tìm kiếm").getPreferredSize();
-        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
-        btnSave.setPreferredSize(refBtn);
-        btnSave.setMinimumSize(refBtn);
-        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
-        btnCancel.setPreferredSize(refBtn);
-        btnCancel.setMinimumSize(refBtn);
-        btnSave.addActionListener(e -> save());
-        btnCancel.addActionListener(e -> dispose());
-        btnPanel.add(btnCancel);
-        btnPanel.add(btnSave);
-        content.add(btnPanel, BorderLayout.SOUTH);
-        setContentPane(content);
-        getRootPane().setDefaultButton(btnSave);
+        panel.add(formPanel, BorderLayout.CENTER);
+        return panel;
     }
 
     private void addRow(JPanel p, GridBagConstraints gbc, GridBagConstraints gbcField, int row, String label, JComponent field) {
         gbc.gridx = 0; gbc.gridy = row;
-        p.add(new JLabel(label), gbc);
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 13));
+        p.add(lbl, gbc);
         gbcField.gridx = 1; gbcField.gridy = row;
         p.add(field, gbcField);
     }
