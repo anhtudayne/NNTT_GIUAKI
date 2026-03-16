@@ -92,11 +92,14 @@ public class TeacherFormDialog extends JDialog {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         btnPanel.setBackground(new Color(245, 247, 250));
         
+        Dimension refBtn = new JButton("Tìm kiếm").getPreferredSize();
         JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
-        btnSave.setPreferredSize(new Dimension(100, 35));
+        btnSave.setPreferredSize(refBtn);
+        btnSave.setMinimumSize(refBtn);
         
         JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
-        btnCancel.setPreferredSize(new Dimension(100, 35));
+        btnCancel.setPreferredSize(refBtn);
+        btnCancel.setMinimumSize(refBtn);
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());
         btnPanel.add(btnCancel);

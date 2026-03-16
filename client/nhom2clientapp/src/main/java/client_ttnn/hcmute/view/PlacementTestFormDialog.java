@@ -65,7 +65,7 @@ public class PlacementTestFormDialog extends JDialog {
         gbcField.anchor = GridBagConstraints.WEST;
         gbcField.weightx = 1.0;
 
-        int cols = 40;
+        int cols = 42;
         cmbStudent = new JComboBox<>();
         cmbStudent.setEditable(true);
         cmbStudent.setRenderer(new DefaultListCellRenderer() {
@@ -96,8 +96,13 @@ public class PlacementTestFormDialog extends JDialog {
 
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         btnPanel.setBackground(Color.WHITE);
+        Dimension refBtn = new JButton("Tìm kiếm").getPreferredSize();
         JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
+        btnSave.setPreferredSize(refBtn);
+        btnSave.setMinimumSize(refBtn);
         JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
+        btnCancel.setPreferredSize(refBtn);
+        btnCancel.setMinimumSize(refBtn);
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());
         btnPanel.add(btnCancel);

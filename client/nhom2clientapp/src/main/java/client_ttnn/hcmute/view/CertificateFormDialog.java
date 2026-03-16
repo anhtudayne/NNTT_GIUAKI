@@ -132,19 +132,14 @@ public class CertificateFormDialog extends JDialog {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
         btnPanel.setBackground(new Color(245, 247, 250));
 
-        JButton btnSave = new JButton("Lưu");
-        btnSave.setPreferredSize(new Dimension(100, 35));
-        btnSave.setBackground(new Color(46, 204, 113));
-        btnSave.setForeground(Color.WHITE);
-        btnSave.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        btnSave.setFocusPainted(false);
+        Dimension refBtn = new JButton("Tìm kiếm").getPreferredSize();
+        JButton btnSave = ButtonStyles.createPrimaryButton("Lưu");
+        btnSave.setPreferredSize(refBtn);
+        btnSave.setMinimumSize(refBtn);
 
-        JButton btnCancel = new JButton("Hủy");
-        btnCancel.setPreferredSize(new Dimension(100, 35));
-        btnCancel.setBackground(new Color(231, 76, 60));
-        btnCancel.setForeground(Color.WHITE);
-        btnCancel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 14));
-        btnCancel.setFocusPainted(false);
+        JButton btnCancel = ButtonStyles.createNeutralButton("Hủy");
+        btnCancel.setPreferredSize(refBtn);
+        btnCancel.setMinimumSize(refBtn);
 
         btnSave.addActionListener(e -> save());
         btnCancel.addActionListener(e -> dispose());
