@@ -26,16 +26,8 @@ public class App {
 
         // Đảm bảo tạo UI trong Thread an toàn của Swing
         javax.swing.SwingUtilities.invokeLater(() -> {
-            // Tạm thời TẮT Đăng nhập, mở thẳng MainFrame với quyền Admin để test nhanh
-            client_ttnn.hcmute.model.UserAccount mockAdmin = new client_ttnn.hcmute.model.UserAccount();
-            mockAdmin.setRole("Admin");
-            mockAdmin.setRelatedId(1);
-            
-            client_ttnn.hcmute.view.MainFrame mainFrame = new client_ttnn.hcmute.view.MainFrame(mockAdmin);
-            mainFrame.setVisible(true);
-            
-            // client_ttnn.hcmute.view.LoginFrame loginFrame = new client_ttnn.hcmute.view.LoginFrame();
-            // loginFrame.setVisible(true);
+            client_ttnn.hcmute.view.ModernLoginForm loginForm = new client_ttnn.hcmute.view.ModernLoginForm();
+            loginForm.setVisible(true);
         });
     }
 }
